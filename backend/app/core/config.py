@@ -28,11 +28,11 @@ class Settings(BaseSettings):
 
     # Commercial Model 1: Google Gemini (Multimodal / Vision)
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API key")
-    GEMINI_DEFAULT_MODEL: str = Field(default="gemini-1.5-flash", description="Gemini model ID")
+    GEMINI_DEFAULT_MODEL: str = Field(default="gemini-2.5-flash", description="Gemini model ID")
 
     # Commercial Model 2: Groq Cloud (Ultra-fast Inference / Reasoning)
     GROQ_API_KEY: str = Field(default="", description="Groq Cloud API key")
-    GROQ_DEFAULT_MODEL: str = Field(default="llama-3.3-70b-versatile", description="Groq model ID")
+    GROQ_DEFAULT_MODEL: str = Field(default="qwen/qwen3.8-27b", description="Groq model ID")
 
     # Open-Weight Local Model: Ollama
     OLLAMA_BASE_URL: str = Field(default="http://localhost:11434", description="Ollama API endpoint")

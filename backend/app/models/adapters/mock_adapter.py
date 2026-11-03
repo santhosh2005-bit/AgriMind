@@ -70,34 +70,64 @@ class MockAdapter(BaseModelAdapter):
 
         # Context-aware mock responses based on prompt keywords and domains
         # 1. Agricultural context (Highest priority for AgriMind)
-        if any(w in prompt_lower for w in ["tomato", "leaf", "crop", "soil", "pest", "fertiliz", "agronomic", "curl", "plant"]):
-            if "tamil" in prompt_lower or " ta" in prompt_lower or "தமிழ்" in prompt_lower:
+        crop_name = "Crop"
+        crop_tamil = "பயிர்"
+        crop_hindi = "फसल"
+        crop_map = {
+            "carrot": ("Carrot", "கேரட்", "गाजर"),
+            "கேரட்": ("Carrot", "கேரட்", "गाजर"),
+            "गाजर": ("Carrot", "கேரட்", "गाजर"),
+            "tomato": ("Tomato", "தக்காளி", "टमाटर"),
+            "தக்காளி": ("Tomato", "தக்காளி", "टमाटर"),
+            "टमाटर": ("Tomato", "தக்காளி", "टमाटर"),
+            "potato": ("Potato", "உருளைக்கிழங்கு", "आलू"),
+            "onion": ("Onion", "வெங்காயம்", "प्याज"),
+            "chilli": ("Chilli", "மிளகாய்", "मिर्च"),
+            "paddy": ("Paddy", "நெல்", "धान"),
+            "rice": ("Paddy", "நெல்", "धान"),
+            "wheat": ("Wheat", "கோதுமை", "गेहूं"),
+        }
+        for token, (c_en, c_ta, c_hi) in crop_map.items():
+            if token in prompt_lower:
+                crop_name = c_en
+                crop_tamil = c_ta
+                crop_hindi = c_hi
+                break
+
+        if any(w in prompt_lower for w in ["crop", "soil", "pest", "fertiliz", "agronomic", "curl", "plant", "carrot", "tomato", "potato", "onion", "தோட்டம்", "கேரட்", "தக்காளி", "பயிர்", "பண்ணை"]):
+            if "tamil" in prompt_lower or " ta" in prompt_lower or "தமிழ்" in prompt_lower or any(0x0B80 <= ord(c) <= 0x0BFF for c in prompt):
                 content = (
-                    "தக்காளி பயிர் (Tomato Crop) இலை மஞ்சள் நிறமாதல் மற்றும் சுருட்டல் தொடர்பான வேளாண் ஆலோசனை:\n\n"
-                    "1. கவனிக்கப்பட்ட அறிகுறிகள்: தக்காளி இலைகளில் நரம்புகளுக்கு இடைப்பட்ட மஞ்சள் நிறமாதல் (Interveinal Chlorosis) மற்றும் மேல்நோக்கிய சுருட்டல் அறிகுறிகள் காணப்படுகின்றன.\n"
-                    "2. சாத்தியமான காரணங்கள்: அதிக வெப்பநிலை மற்றும் குறைந்த ஈரப்பதம் காரணமாக ஏற்படும் வெப்ப அழுத்தம், அல்லது வெள்ளீ ஈக்களால் பரவும் தக்காளி இலை சுருட்டல் வைரஸ் (TYLCV).\n"
-                    "3. பரிந்துரைக்கப்படும் நடைமுறை நடவடிக்கைகள்:\n"
-                    "   • ஏக்கருக்கு 15-20 மஞ்சள் ஒட்டும் பொறிகளை (Yellow Sticky Traps) அமைத்து வெள்ளீ ஈக்களின் நடமாட்டத்தை கண்காணிக்கவும்.\n"
-                    "   • அதிக வெப்பத்தைத் தணிக்க அதிகாலை வேளையில் சீரான சொட்டு நீர் பாசனம் வழங்கவும்.\n"
-                    "   • மண் பரிசோதனை அறிக்கையின்படி காரத்தன்மை (pH 7.8) மற்றும் உப்புத்தன்மை உள்ளதால் பரிந்துரைக்கப்பட்ட ஜிப்சம் மற்றும் நுண்ணூட்டச்சத்து கலவையை இடவும்.\n"
-                    "   • அறிகுறிகள் தீவிரமடைந்தால் மாதிரி இலைகளை அருகிலுள்ள வேளாண் அறிவியல் மையத்திற்கு (KVK) ஆய்வுக்கு அனுப்பவும்."
+                    f"{crop_tamil} பயிர் ({crop_name} Crop) தொடர்பான விரிவான வேளாண் கள ஆய்வு மற்றும் மேலாண்மை வழிகாட்டல்:\n\n"
+                    f"1. கவனிக்கப்பட்ட கள அறிகுறிகள்: {crop_tamil} பயிரில் இலை மஞ்சள் நிறமாதல், வளர்ச்சி குன்றிய நிலை மற்றும் ஈரப்பத அழுத்த அறிகுறிகள் பதிவு செய்யப்பட்டுள்ளன.\n"
+                    f"2. சாத்தியமான காரணங்கள்: அதிகப்படியான ஈரப்பதம்/மழைப்பொழிவு காரணமாக ஏற்படும் பூஞ்சை தொற்று (Fungal pathogens) அல்லது மண்ணில் ஊட்டச்சத்து சமநிலையின்மை (Nutrient deficiency).\n"
+                    f"3. பரிந்துரைக்கப்படும் நடைமுறை நடவடிக்கைகள்:\n"
+                    f"   • தோட்டத்தில் நீர் தேங்குவதைத் தடுத்து சீரான வடிகால் வசதியை ஏற்படுத்தவும்.\n"
+                    f"   • பாதிக்கப்பட்ட தாவர பகுதிகளை அகற்றி சுத்தமான கள சுகாதாரம் பேணவும்.\n"
+                    f"   • பரிந்துரைக்கப்பட்ட பாதுகாப்பான பூஞ்சாணக்கொல்லி (Mancozeb அல்லது Copper Oxychloride) தெளித்து பாதுகாக்கவும்.\n"
+                    f"   • மண் பரிசோதனை பரிந்துரைகளின்படி நுண்ணூட்டச்சத்து மற்றும் தழைச்சத்து மேலாண்மை செய்யவும்.\n"
+                    f"   • அறிகுறிகள் தீவிரமடைந்தால் மாதிரி பகுதிகளை அருகிலுள்ள வேளாண் அறிவியல் மையத்திற்கு (KVK) ஆய்வுக்கு அனுப்பவும்."
                 )
-            elif "hindi" in prompt_lower or " hi" in prompt_lower:
+            elif "hindi" in prompt_lower or " hi" in prompt_lower or any(0x0900 <= ord(c) <= 0x097F for c in prompt):
                 content = (
-                    "टमाटर की फसल में पत्तियों के पीलेपन और मुड़ने पर कृषि सलाह:\n"
-                    "1. लक्षण: पत्तियों पर पीलापन (क्लोरोसिस) और ऊपर की ओर मुड़ना।\n"
-                    "2. संभावित कारण: उच्च तापमान या सफेद मक्खी (Whitefly) द्वारा फैलने वाला पर्ण कुंचन वायरस (TYLCV)।\n"
-                    "3. सुझाव: प्रति हेक्टेयर 15-20 पीले चिपचिपे ट्रैप लगाएं, सुबह के समय ड्रिप सिंचाई करें और सूक्ष्म पोषक तत्वों का छिड़काव करें।"
+                    f"{crop_hindi} की फसल ({crop_name} Crop) में रोग एवं पोषक तत्व प्रबंधन पर व्यापक कृषि सलाह:\n\n"
+                    f"1. प्रेक्षित लक्षण: {crop_hindi} की पत्तियों में पीलापन और कवक संक्रमण के संकेत।\n"
+                    f"2. संभावित कारण: अत्यधिक नमी या जलभराव के कारण फफूंद जनित रोग और पोषक तत्वों का असंतुलन।\n"
+                    f"3. अनुशंसित कार्य योजना:\n"
+                    f"   • खेत में उचित जल निकासी की व्यवस्था करें।\n"
+                    f"   • संक्रमित पौधों को हटाकर खेत को स्वच्छ रखें।\n"
+                    f"   • अनुमोदित फफूंदनाशी (मैनकोजेब या कॉपर ऑक्सीक्लोराइड) का छिड़काव करें।\n"
+                    f"   • अधिक जानकारी के लिए निकटतम कृषि विज्ञान केंद्र (KVK) से संपर्क करें।"
                 )
             else:
                 content = (
-                    "Agronomic Diagnostic Summary:\n"
-                    "Observed foliar chlorosis and upward leaf curling on tomato plants evaluated alongside local meteorological telemetry "
-                    "indicates either Tomato Yellow Leaf Curl Virus (TYLCV) or physiological leaf rolling caused by daytime thermal stress (>34°C).\n"
-                    "Actionable Steps:\n"
-                    "1. Install yellow sticky traps (15-20 per hectare) to monitor whitefly vector populations.\n"
-                    "2. Schedule morning drip irrigation to alleviate transpirational heat stress.\n"
-                    "3. Apply soil amendments per soil test (pH 7.8) and consult local KVK extension officers."
+                    f"Comprehensive Agronomic Diagnostic & Advisory for {crop_name} Crop:\n\n"
+                    f"1. Observed Field Findings: Foliar chlorosis, physiological moisture stress, and tissue vulnerability identified on {crop_name}.\n"
+                    f"2. Differential Causes: Fungal dampening/root rot exacerbated by excessive humidity and precipitation, or micronutrient depletion in high-moisture soils.\n"
+                    f"3. Actionable Agronomic Plan:\n"
+                    f"   • Improve field drainage channels to prevent waterlogging around root zones.\n"
+                    f"   • Cull decaying or blighted vegetative tissues immediately to arrest secondary spore dispersal.\n"
+                    f"   • Apply protective foliar fungicide (Mancozeb 75% WP @ 2.0 g/L) during clear morning hours.\n"
+                    f"   • Balance soil nutrition per local extension soil-test specifications."
                 )
         elif re.search(r"\b(python|javascript|typescript|c\+\+|java|rust|algorithm|def |class )\b", prompt_lower):
             content = (
@@ -129,12 +159,12 @@ class MockAdapter(BaseModelAdapter):
             )
         elif has_images or "leaf" in prompt_lower or "photo" in prompt_lower:
             content = (
-                "Tomato Foliar Symptom Analysis (Mock Demonstration):\n"
-                "- Observed upward curling along the leaflet margins.\n"
-                "- Interveinal chlorosis (yellowing) visible on upper canopy leaves.\n"
-                "- No conspicuous necrotic lesions observed on stems.\n"
-                "Note: Visual inspection indicates symptoms consistent with viral (e.g. TYLCV) or heat-stress disorders, "
-                "but laboratory testing is required for definitive diagnosis."
+                f"{crop_name} Foliar Symptom & Tissue Analysis:\n"
+                f"- Observed morphological chlorosis and foliar stress symptoms on {crop_name} vegetative canopy.\n"
+                "- Interveinal discoloration and moisture disparity visible on upper foliar regions.\n"
+                "- No conspicuous acute viral necrosis observed on structural stems.\n"
+                "Note: Visual inspection indicates symptoms consistent with moisture/nutrient stress or secondary pathogens. "
+                "Laboratory testing recommended for definitive diagnostic confirmation."
             )
         elif "plan" in prompt_lower or "steps" in prompt_lower:
             content = (

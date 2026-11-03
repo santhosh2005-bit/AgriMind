@@ -142,7 +142,9 @@ def request_understanding_node(state: AgriMindState) -> AgriMindState:
     # 3. Detect crop mentions (for agricultural inquiries)
     detected_crops = []
     for token, canonical in EXPANDED_CROP_LEXICON.items():
-        if re.search(r"\b" + re.escape(token) + r"\b", query_lower):
+        is_indic = any(ord(c) > 127 for c in token)
+        pattern = re.escape(token) if is_indic else r"\b" + re.escape(token) + r"\b"
+        if re.search(pattern, query_lower):
             if canonical not in detected_crops:
                 detected_crops.append(canonical)
 

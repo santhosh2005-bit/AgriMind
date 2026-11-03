@@ -13,6 +13,10 @@ services:
         value: production
       - key: CORS_ORIGINS
         value: "*"
+      - key: GEMINI_DEFAULT_MODEL
+        value: gemini-2.5-flash
+      - key: GROQ_DEFAULT_MODEL
+        value: qwen/qwen3.8-27b
       - key: GEMINI_API_KEY
         sync: false
       - key: GROQ_API_KEY
