@@ -70,9 +70,14 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                 lesions_dict = [l.model_dump() for l in proc_res.detected_lesions] if proc_res else []
                 annotated_b64 = proc_res.annotated_preview_base64 if proc_res else None
 
+                img_type = proc_res.image_type if proc_res else "foliar"
+                soil_cls = proc_res.soil_classification if proc_res else None
+
                 img_metadata = {
                     "filename": inp.filename or "uploaded_image.jpg",
                     "summary": inp.extracted_summary or notes_str,
+                    "image_type": img_type,
+                    "soil_classification": soil_cls,
                     "canopy_coverage_pct": canopy,
                     "chlorosis_severity_pct": chlorosis,
                     "laplacian_blur_score": blur_score,
@@ -81,7 +86,8 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                     "annotated_preview_base64": annotated_b64,
                 }
                 img_findings.append(
-                    f"Visual Foliar Telemetry for '{inp.filename}': "
+                    f"Visual Inspection Telemetry ({'Soil/Ground' if img_type == 'soil' else 'Crop Foliage'}) for '{inp.filename}': "
+                    f"{f'Classified as {soil_cls}. ' if soil_cls else ''}"
                     f"Canopy coverage: {canopy}%, Chlorosis severity: {chlorosis}%, "
                     f"Clarity score: {blur_score}. {notes_str}"
                 )

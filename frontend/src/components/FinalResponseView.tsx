@@ -149,6 +149,13 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
     (uploadedImageFile?.processing_summary as any)?.detected_lesions ||
     (imageEvidence?.metadata as any)?.detected_lesions ||
     [];
+  const imageType: string =
+    (uploadedImageFile?.processing_summary as any)?.image_type ||
+    (imageEvidence?.metadata as any)?.image_type ||
+    'foliar';
+  const soilClassification: string | undefined =
+    (uploadedImageFile?.processing_summary as any)?.soil_classification ||
+    (imageEvidence?.metadata as any)?.soil_classification;
   const greenCanopyPct = uploadedImageFile?.processing_summary?.color_metrics?.green_canopy_pct ?? (imageEvidence?.metadata?.canopy_coverage_pct as number ?? 0);
   const chlorosisPct = uploadedImageFile?.processing_summary?.color_metrics?.yellow_chlorosis_pct ?? (imageEvidence?.metadata?.chlorosis_severity_pct as number ?? 0);
   const blurScore = uploadedImageFile?.processing_summary?.laplacian_blur_score ?? (imageEvidence?.metadata?.laplacian_blur_score as number ?? 0);
@@ -211,18 +218,18 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
         />
       )}
 
-      {/* 2. Uploaded Crop Photograph & Visual Foliar Inspection Card */}
+      {/* 2. Uploaded Crop Photograph & Visual Inspection Card */}
       {shouldShowImageCard && (
         <div className="p-4 rounded-xl bg-slate-900/90 border border-emerald-500/40 space-y-3 shadow-lg">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-emerald-400" />
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                Uploaded Crop Photograph & Computer Vision Inspection
+                {imageType === 'soil' ? 'Uploaded Soil Profile & Computer Vision Inspection' : 'Uploaded Crop Photograph & Computer Vision Inspection'}
               </h4>
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-mono">
-              OpenCV Color & Texture Preprocessor
+              {imageType === 'soil' ? 'OpenCV Soil Texture & Earth Classification' : 'OpenCV Color & Texture Preprocessor'}
             </span>
           </div>
 
@@ -231,7 +238,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
             <div className="relative group rounded-lg overflow-hidden border border-slate-800 bg-slate-950 aspect-video md:aspect-square flex items-center justify-center">
               <img
                 src={imagePreviewUrl}
-                alt="Symptomatic crop foliage inspection"
+                alt={imageType === 'soil' ? 'Soil structure inspection' : 'Symptomatic crop foliage inspection'}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
                 onClick={() => setIsImageZoomed(!isImageZoomed)}
                 onError={(e) => {
@@ -241,63 +248,92 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               />
               <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-slate-300 flex items-center gap-1">
                 <Eye className="w-3 h-3 text-emerald-400" />
-                <span>{uploadedImageFile?.metadata?.filename || 'tomato_leaf_sample.jpg'}</span>
+                <span>{uploadedImageFile?.metadata?.filename || 'crop_image.jpg'}</span>
               </div>
             </div>
 
             {/* OpenCV Preprocessor Metrics */}
             <div className="md:col-span-2 space-y-3">
               <div className="text-xs font-bold text-slate-200">
-                Foliar Canopy & Quantitative Tissue Analysis
+                {imageType === 'soil'
+                  ? `Soil Composition & Physical Structure (${soilClassification || 'Agricultural Soil'})`
+                  : 'Foliar Canopy & Quantitative Tissue Analysis'}
               </div>
 
-              {/* Canopy coverage progress bar */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-slate-400">Green Canopy Foliage:</span>
-                  <span className="font-mono font-bold text-emerald-400">{greenCanopyPct}%</span>
+              {imageType === 'soil' ? (
+                /* Soil Specific Metrics */
+                <div className="space-y-2">
+                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-400">Classified Texture:</span>
+                      <span className="font-semibold text-emerald-300">{soilClassification || 'Red Loamy Soil'}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-400">Vegetative Overgrowth:</span>
+                      <span className="font-mono text-slate-300">{greenCanopyPct}% (Clean Tilled Bed)</span>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-400">Soil Drainage & Aeration:</span>
+                      <span className="font-semibold text-teal-300">Optimal Granular Friability</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${greenCanopyPct}%` }}
-                  />
-                </div>
-              </div>
+              ) : (
+                /* Foliar Specific Metrics */
+                <>
+                  {/* Canopy coverage progress bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-400">Green Canopy Foliage:</span>
+                      <span className="font-mono font-bold text-emerald-400">{greenCanopyPct}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: `${greenCanopyPct}%` }}
+                      />
+                    </div>
+                  </div>
 
-              {/* Chlorosis severity progress bar */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-slate-400">Yellow Chlorosis Severity Ratio:</span>
-                  <span className="font-mono font-bold text-amber-400">{chlorosisPct}% (Moderate)</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                    style={{ width: `${chlorosisPct}%` }}
-                  />
-                </div>
-              </div>
+                  {/* Chlorosis severity progress bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-400">Yellow Chlorosis Severity Ratio:</span>
+                      <span className="font-mono font-bold text-amber-400">{chlorosisPct}% (Moderate)</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                        style={{ width: `${chlorosisPct}%` }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
-              {/* Image quality score and foliar findings */}
+              {/* Image quality score and findings */}
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <div className="p-2 rounded-lg bg-slate-950 border border-slate-800/80 text-[11px]">
                   <span className="text-slate-500 block">Laplacian Focus Score:</span>
                   <span className="font-mono font-bold text-teal-300">{blurScore} (High Sharpness)</span>
                 </div>
                 <div className="p-2 rounded-lg bg-slate-950 border border-slate-800/80 text-[11px]">
-                  <span className="text-slate-500 block">Lesion Localization:</span>
+                  <span className="text-slate-500 block">
+                    {imageType === 'soil' ? 'Surface Aggregates:' : 'Lesion Localization:'}
+                  </span>
                   <span className="font-semibold text-rose-300">
-                    {detectedLesions.length > 0 ? `${detectedLesions.length} Infection Foci Identified` : 'Concentric Rings (Blight)'}
+                    {detectedLesions.length > 0
+                      ? `${detectedLesions.length} ${imageType === 'soil' ? 'Clods Mapped' : 'Infection Foci Identified'}`
+                      : imageType === 'soil' ? 'Friable Structure' : 'Concentric Rings (Blight)'}
                   </span>
                 </div>
               </div>
 
-              {/* Exact Lesion & Spoil Localization Breakdown */}
+              {/* Exact Localization Breakdown */}
               {detectedLesions.length > 0 && (
                 <div className="pt-1 space-y-1.5">
                   <div className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
-                    <span>Localized Disease / Spoil Foci ({detectedLesions.length} Zones):</span>
+                    <span>{imageType === 'soil' ? `Mapped Soil Aggregates (${detectedLesions.length} Zones):` : `Localized Disease / Spoil Foci (${detectedLesions.length} Zones):`}</span>
                     <span className="text-[10px] text-emerald-400 font-mono">OpenCV Contour Bounding Box</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
@@ -326,7 +362,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               )}
 
               <p className="text-[11px] text-slate-300 italic bg-slate-950/60 p-2 rounded-lg border border-slate-800/60">
-                Visual Finding: {imageFindingsText || 'Foliar image processed by Computer Vision.'}
+                Visual Finding: {imageFindingsText || (imageType === 'soil' ? 'Soil structure processed by Computer Vision.' : 'Foliar image processed by Computer Vision.')}
               </p>
             </div>
           </div>

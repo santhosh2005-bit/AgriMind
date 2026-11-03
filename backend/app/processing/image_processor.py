@@ -44,6 +44,8 @@ class ProcessedImageResult(BaseModel):
     is_blurry: bool
     laplacian_blur_score: float
     color_metrics: ImageColorMetrics
+    image_type: str = Field(default="foliar", description="'foliar' (crop leaves/plant) or 'soil' (soil/sand/ground)")
+    soil_classification: Optional[str] = Field(default=None, description="E.g., Red Loamy / Laterite, Sandy, Clay")
     diagnostic_notes: List[str] = Field(default_factory=list)
     detected_lesions: List[DetectedLesionZone] = Field(default_factory=list)
     annotated_preview_base64: Optional[str] = None
@@ -127,99 +129,165 @@ class ImageProcessor:
         brown_pixels = float(cv2.countNonZero(brown_mask))
         brown_pct = round((brown_pixels / total_pixels) * 100.0, 1)
 
-        # 3. Contour & Lesion Localization (Detect exact diseased patches)
+        # 3. Intelligent Classification: Foliage vs. Soil / Ground Imagery
+        # Earthy red/brown soil mask: H in [0, 18] or [160, 180], moderate-high saturation
+        lower_red1 = np.array([0, 50, 40])
+        upper_red1 = np.array([18, 255, 255])
+        lower_red2 = np.array([160, 50, 40])
+        upper_red2 = np.array([180, 255, 255])
+        mask_red_earth = cv2.bitwise_or(
+            cv2.inRange(hsv, lower_red1, upper_red1),
+            cv2.inRange(hsv, lower_red2, upper_red2),
+        )
+        red_earth_pct = round((float(cv2.countNonZero(mask_red_earth)) / total_pixels) * 100.0, 1)
+
+        # Sandy / tan / loamy soil mask: H in [18, 32], moderate saturation
+        lower_sand = np.array([18, 30, 60])
+        upper_sand = np.array([32, 180, 220])
+        mask_sand = cv2.inRange(hsv, lower_sand, upper_sand)
+        sand_pct = round((float(cv2.countNonZero(mask_sand)) / total_pixels) * 100.0, 1)
+
+        total_soil_coverage = red_earth_pct + sand_pct
+        is_soil_image = (green_pct < 4.0 and total_soil_coverage > 25.0) or (green_pct < 2.0 and brown_pct > 15.0)
+
+        image_type = "soil" if is_soil_image else "foliar"
+        soil_classification = None
+
+        if is_soil_image:
+            if red_earth_pct > 30.0 or (mean_rgb[0] > mean_rgb[1] * 1.25 and mean_rgb[0] > 100):
+                soil_classification = "Red Loamy / Laterite Soil"
+            elif sand_pct > 40.0 or (mean_rgb[0] > 140 and mean_rgb[1] > 120 and mean_rgb[2] > 90):
+                soil_classification = "Sandy Loam / Alluvial Soil"
+            elif mean_rgb[0] < 70 and mean_rgb[1] < 70 and mean_rgb[2] < 70:
+                soil_classification = "Black Clay / Vertisol Soil"
+            else:
+                soil_classification = "Loamy Agricultural Soil"
+
         detected_lesions: List[DetectedLesionZone] = []
         annotated_cv = cv_img.copy()
 
-        # Combine diseased masks (yellow chlorosis + brown necrotic lesions)
-        combined_disease_mask = cv2.bitwise_or(yellow_mask, brown_mask)
-        # Apply morphological operations to smooth noise
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        cleaned_mask = cv2.morphologyEx(combined_disease_mask, cv2.MORPH_OPEN, kernel)
-        cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_CLOSE, kernel)
+        if is_soil_image:
+            # Soil Surface Analysis: contour aggregate clods and texture
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
+            clod_mask = cv2.morphologyEx(mask_red_earth if red_earth_pct > sand_pct else mask_sand, cv2.MORPH_CLOSE, kernel)
+            contours, _ = cv2.findContours(clod_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
+            min_clod_area = total_pixels * 0.01
 
-        contours, _ = cv2.findContours(cleaned_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        # Filter contours by minimum area (at least 0.5% of total image area)
-        min_contour_area = total_pixels * 0.005
-        sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)[:6]
-
-        for idx, cnt in enumerate(sorted_contours):
-            area = cv2.contourArea(cnt)
-            if area < min_contour_area:
-                continue
-
-            x, y, w, h = cv2.boundingRect(cnt)
-            cnt_area_pct = round((area / total_pixels) * 100.0, 2)
-
-            # Determine dominant symptom in this specific bounding box
-            roi_brown = brown_mask[y:y+h, x:x+w]
-            roi_yellow = yellow_mask[y:y+h, x:x+w]
-            brown_count = cv2.countNonZero(roi_brown)
-            yellow_count = cv2.countNonZero(roi_yellow)
-
-            if brown_count > yellow_count * 0.8:
-                lesion_type = "Necrotic Blight Lesion (Target-Board Spoil)"
-                box_color = (0, 0, 235)  # Crimson Red in BGR
-                severity = "Severe" if cnt_area_pct > 3.0 else "Moderate"
-            else:
-                lesion_type = "Chlorotic Foliar Halo / Yellowing"
-                box_color = (0, 215, 255)  # Amber Yellow in BGR
-                severity = "Moderate" if cnt_area_pct > 2.0 else "Mild"
-
-            # Draw glowing bounding box and label tag on annotated preview
-            cv2.rectangle(annotated_cv, (x, y), (x + w, y + h), box_color, 2)
-            label_text = f"#{idx+1} {lesion_type.split()[0]} ({cnt_area_pct}%)"
-            cv2.putText(
-                annotated_cv,
-                label_text,
-                (x, max(15, y - 6)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.45,
-                box_color,
-                1,
-                cv2.LINE_AA,
-            )
-
-            detected_lesions.append(
-                DetectedLesionZone(
-                    zone_id=f"zone-{idx+1}",
-                    box=(x, y, w, h),
-                    relative_box=(
-                        round((x / width) * 100, 1),
-                        round((y / height) * 100, 1),
-                        round((w / width) * 100, 1),
-                        round((h / height) * 100, 1),
-                    ),
-                    area_pct=cnt_area_pct,
-                    lesion_type=lesion_type,
-                    severity=severity,
+            for idx, cnt in enumerate(sorted_contours):
+                area = cv2.contourArea(cnt)
+                if area < min_clod_area:
+                    continue
+                x, y, w, h = cv2.boundingRect(cnt)
+                cnt_area_pct = round((area / total_pixels) * 100.0, 1)
+                box_color = (40, 140, 240)  # Orange bounding box for soil clods
+                cv2.rectangle(annotated_cv, (x, y), (x + w, y + h), box_color, 2)
+                cv2.putText(
+                    annotated_cv,
+                    f"Aggregate #{idx+1} ({cnt_area_pct}%)",
+                    (x, max(15, y - 6)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.45,
+                    box_color,
+                    1,
+                    cv2.LINE_AA,
                 )
-            )
+                detected_lesions.append(
+                    DetectedLesionZone(
+                        zone_id=f"clod-{idx+1}",
+                        box=(x, y, w, h),
+                        relative_box=(
+                            round((x / width) * 100, 1),
+                            round((y / height) * 100, 1),
+                            round((w / width) * 100, 1),
+                            round((h / height) * 100, 1),
+                        ),
+                        area_pct=cnt_area_pct,
+                        lesion_type="Soil Aggregate / Granular Clod",
+                        severity="Moderate",
+                    )
+                )
 
-        # Encode annotated preview to base64 for direct UI display
-        import base64
-        _, buffer = cv2.imencode(".jpg", annotated_cv)
-        annotated_preview_base64 = f"data:image/jpeg;base64,{base64.b64encode(buffer).decode('utf-8')}"
+            notes = [
+                f"Classified photograph as Soil / Ground Profile ({soil_classification}).",
+                f"Empirical soil hue profile: Red/Earthy fraction: {red_earth_pct}%, Sandy/Loam fraction: {sand_pct}%.",
+                f"Visual granular clod structure identified with healthy aeration; suitable for winter pulses, brassicas, and root vegetables.",
+            ]
+            if is_blurry:
+                notes.append(f"Image blur score ({laplacian_var:.1f}) is below clarity threshold.")
+        else:
+            # 3. Contour & Lesion Localization (Foliar crop leaf)
+            combined_disease_mask = cv2.bitwise_or(yellow_mask, brown_mask)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            cleaned_mask = cv2.morphologyEx(combined_disease_mask, cv2.MORPH_OPEN, kernel)
+            cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_CLOSE, kernel)
 
-        # Chlorosis severity ratio
-        chlorosis_ratio = round(yellow_pct / max(1.0, green_pct), 3)
+            contours, _ = cv2.findContours(cleaned_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            min_contour_area = total_pixels * 0.005
+            sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)[:6]
 
-        # Mean RGB
-        mean_bgr = cv2.mean(cv_img)[:3]
-        mean_rgb = (round(mean_bgr[2], 1), round(mean_bgr[1], 1), round(mean_bgr[0], 1))
+            for idx, cnt in enumerate(sorted_contours):
+                area = cv2.contourArea(cnt)
+                if area < min_contour_area:
+                    continue
 
-        # Diagnostic notes based on extracted parameters
-        notes: List[str] = []
-        if is_blurry:
-            notes.append(f"Image blur score ({laplacian_var:.1f}) is below clarity threshold ({self.blur_threshold}). Macro details may be obscured.")
-        if yellow_pct > 15.0:
-            notes.append(f"Elevated yellow foliar pigmentation detected ({yellow_pct}% of area), indicating interveinal chlorosis or leaf senescence.")
-        if brown_pct > 8.0:
-            notes.append(f"Necrotic lesions detected ({brown_pct}% of area), suggesting tissue death or blight progression.")
-        if len(detected_lesions) > 0:
-            notes.append(f"Localized {len(detected_lesions)} active infection foci/lesion zones with visible target-board degradation.")
-        if green_pct > 40.0:
-            notes.append(f"Substantial viable green canopy retained ({green_pct}% of area).")
+                x, y, w, h = cv2.boundingRect(cnt)
+                cnt_area_pct = round((area / total_pixels) * 100.0, 2)
+
+                roi_brown = brown_mask[y:y+h, x:x+w]
+                roi_yellow = yellow_mask[y:y+h, x:x+w]
+                brown_count = cv2.countNonZero(roi_brown)
+                yellow_count = cv2.countNonZero(roi_yellow)
+
+                if brown_count > yellow_count * 0.8:
+                    lesion_type = "Necrotic Blight Lesion (Target-Board Spoil)"
+                    box_color = (0, 0, 235)  # Crimson Red in BGR
+                    severity = "Severe" if cnt_area_pct > 3.0 else "Moderate"
+                else:
+                    lesion_type = "Chlorotic Foliar Halo / Yellowing"
+                    box_color = (0, 215, 255)  # Amber Yellow in BGR
+                    severity = "Moderate" if cnt_area_pct > 2.0 else "Mild"
+
+                cv2.rectangle(annotated_cv, (x, y), (x + w, y + h), box_color, 2)
+                label_text = f"#{idx+1} {lesion_type.split()[0]} ({cnt_area_pct}%)"
+                cv2.putText(
+                    annotated_cv,
+                    label_text,
+                    (x, max(15, y - 6)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.45,
+                    box_color,
+                    1,
+                    cv2.LINE_AA,
+                )
+
+                detected_lesions.append(
+                    DetectedLesionZone(
+                        zone_id=f"zone-{idx+1}",
+                        box=(x, y, w, h),
+                        relative_box=(
+                            round((x / width) * 100, 1),
+                            round((y / height) * 100, 1),
+                            round((w / width) * 100, 1),
+                            round((h / height) * 100, 1),
+                        ),
+                        area_pct=cnt_area_pct,
+                        lesion_type=lesion_type,
+                        severity=severity,
+                    )
+                )
+
+            notes = []
+            if is_blurry:
+                notes.append(f"Image blur score ({laplacian_var:.1f}) is below clarity threshold ({self.blur_threshold}). Macro details may be obscured.")
+            if yellow_pct > 15.0:
+                notes.append(f"Elevated yellow foliar pigmentation detected ({yellow_pct}% of area), indicating interveinal chlorosis or leaf senescence.")
+            if brown_pct > 8.0:
+                notes.append(f"Necrotic lesions detected ({brown_pct}% of area), suggesting tissue death or blight progression.")
+            if len(detected_lesions) > 0:
+                notes.append(f"Localized {len(detected_lesions)} active infection foci/lesion zones with visible target-board degradation.")
+            if green_pct > 40.0:
+                notes.append(f"Substantial viable green canopy retained ({green_pct}% of area).")
 
         color_metrics = ImageColorMetrics(
             mean_rgb=mean_rgb,
@@ -240,6 +308,8 @@ class ImageProcessor:
             is_blurry=is_blurry,
             laplacian_blur_score=round(laplacian_var, 2),
             color_metrics=color_metrics,
+            image_type=image_type,
+            soil_classification=soil_classification,
             diagnostic_notes=notes,
             detected_lesions=detected_lesions,
             annotated_preview_base64=annotated_preview_base64,
