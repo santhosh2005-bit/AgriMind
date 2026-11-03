@@ -5,7 +5,7 @@ import type {
   ExecutionTraceView,
 } from '../types/api';
 
-const API_BASE = '/api';
+export const API_BASE = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api` : '/api';
 
 export interface WorkflowRunRequestPayload {
   text_query: string;

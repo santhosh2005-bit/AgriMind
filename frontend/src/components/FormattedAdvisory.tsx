@@ -211,7 +211,8 @@ export const FormattedAdvisory: React.FC<FormattedAdvisoryProps> = ({
 
     const sentence = sentencesQueueRef.current[index];
     const encoded = encodeURIComponent(sentence);
-    const audioUrl = `http://127.0.0.1:8000/api/v1/tools/tts?text=${encoded}&lang=${langConfig.code}`;
+    const apiBase = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api` : '/api';
+    const audioUrl = `${apiBase}/v1/tools/tts?text=${encoded}&lang=${langConfig.code}`;
 
     const audio = new Audio(audioUrl);
     audio.playbackRate = speechRate;
