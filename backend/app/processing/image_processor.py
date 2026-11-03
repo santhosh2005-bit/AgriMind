@@ -1,5 +1,6 @@
 """Image processing pipeline using Pillow and OpenCV for agricultural foliar diagnostics."""
 
+import base64
 import hashlib
 import io
 import logging
@@ -99,6 +100,10 @@ class ImageProcessor:
             # Fallback array conversion from PIL
             cv_img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
+        # Mean RGB channels
+        mean_bgr = cv2.mean(cv_img)[:3]
+        mean_rgb = [round(float(mean_bgr[2]), 1), round(float(mean_bgr[1]), 1), round(float(mean_bgr[0]), 1)]
+
         # Blurriness check via Laplacian variance
         gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
         laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
@@ -128,6 +133,9 @@ class ImageProcessor:
         brown_mask = cv2.inRange(hsv, lower_brown, upper_brown)
         brown_pixels = float(cv2.countNonZero(brown_mask))
         brown_pct = round((brown_pixels / total_pixels) * 100.0, 1)
+
+        # Chlorosis severity ratio
+        chlorosis_ratio = round(yellow_pct / (green_pct + yellow_pct + 1e-5), 3) if (green_pct + yellow_pct) > 0 else 0.0
 
         # 3. Intelligent Classification: Foliage vs. Soil / Ground Imagery
         # Earthy red/brown soil mask: H in [0, 18] or [160, 180], moderate-high saturation
@@ -288,6 +296,14 @@ class ImageProcessor:
                 notes.append(f"Localized {len(detected_lesions)} active infection foci/lesion zones with visible target-board degradation.")
             if green_pct > 40.0:
                 notes.append(f"Substantial viable green canopy retained ({green_pct}% of area).")
+
+        # Encode annotated OpenCV visualization to Base64 JPEG
+        annotated_preview_base64 = None
+        try:
+            _, buffer = cv2.imencode('.jpg', annotated_cv, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
+            annotated_preview_base64 = f"data:image/jpeg;base64,{base64.b64encode(buffer).decode('ascii')}"
+        except Exception:
+            pass
 
         color_metrics = ImageColorMetrics(
             mean_rgb=mean_rgb,

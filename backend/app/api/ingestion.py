@@ -72,6 +72,9 @@ async def upload_multimodal_file(file: UploadFile = File(...)):
             img_result = default_image_processor.process_image(content, filename=raw_filename)
             checksum = img_result.checksum_sha256
             processing_summary = img_result.model_dump()
+            import base64
+            processing_summary["original_base64"] = f"data:image/jpeg;base64,{base64.b64encode(content).decode('ascii')}"
+            processing_summary["original_image_url"] = f"/data/uploads/{safe_name}"
             extracted_summary_text = (
                 f"Image {img_result.width}x{img_result.height}px. "
                 f"Green canopy: {img_result.color_metrics.green_canopy_pct}%, "

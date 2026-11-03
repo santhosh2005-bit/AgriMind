@@ -33,6 +33,40 @@ class VisualizationData(BaseModel):
     notes: Optional[str] = Field(None, description="Agronomic interpretation notes or threshold indicators")
 
 
+class ParcelIntelligence(BaseModel):
+    """Cadastral parcel & geospatial context for land records."""
+    survey_number: Optional[str] = Field(None, description="E.g. Survey No. 202/55 or 42")
+    village: Optional[str] = Field(None, description="Village or Taluk name")
+    district: Optional[str] = Field(None, description="District / State")
+    latitude: float = Field(default=11.0168)
+    longitude: float = Field(default=76.9558)
+    area_acres: Optional[float] = Field(default=2.4)
+    boundary_polygon: List[List[float]] = Field(
+        default_factory=list,
+        description="Coordinates [[lat, lon], ...] defining parcel boundary"
+    )
+
+
+class MandiMarketPrice(BaseModel):
+    """Live APMC/Mandi commodity wholesale rates."""
+    commodity: str = Field(..., description="Crop commodity name")
+    market: str = Field(..., description="Mandi/APMC market yard")
+    modal_price_rs_qtl: int = Field(..., description="Modal price in INR per Quintal")
+    min_price: int
+    max_price: int
+    trend: str = Field(default="Stable", description="'Rising', 'Falling', 'Stable'")
+    price_date: str
+
+
+class ChemicalDilutionSpec(BaseModel):
+    """Safe tank-mix and dosage specification."""
+    chemical_name: str
+    recommended_dosage_per_liter: str
+    tank_sizes_liters: List[int] = Field(default_factory=lambda: [15, 100, 500])
+    compatibility_warnings: List[str] = Field(default_factory=list)
+    safe_water_ph_range: str = Field(default="6.0 - 7.0")
+
+
 class FinalResponse(BaseModel):
     """
     Standardized, structured output conforming to Section 9 of problem requirements.
@@ -68,6 +102,21 @@ class FinalResponse(BaseModel):
         default_factory=list,
         description="Data-driven charts and structured representations derived from real tool telemetry"
     )
+
+    # Advanced FarmwiseAI features
+    parcel_intelligence: Optional[ParcelIntelligence] = Field(
+        default=None,
+        description="Cadastral map boundaries, survey numbers, and geo-coordinates"
+    )
+    mandi_prices: List[MandiMarketPrice] = Field(
+        default_factory=list,
+        description="Current agricultural market prices (APMC/Mandi rates)"
+    )
+    chemical_calculator: Optional[ChemicalDilutionSpec] = Field(
+        default=None,
+        description="Interactive tank-mix dilution calculator and compatibility specifications"
+    )
+
     uncertainties_and_limitations: List[str] = Field(
         default_factory=list,
         description="Explicit caveats regarding missing data, resolution limits, or model boundaries"

@@ -136,6 +136,34 @@ export interface VisualizationData {
   notes?: string;
 }
 
+export interface ParcelIntelligence {
+  survey_number?: string;
+  village?: string;
+  district?: string;
+  latitude: number;
+  longitude: number;
+  area_acres?: number;
+  boundary_polygon: number[][];
+}
+
+export interface MandiMarketPrice {
+  commodity: string;
+  market: string;
+  modal_price_rs_qtl: number;
+  min_price: number;
+  max_price: number;
+  trend: string;
+  price_date: string;
+}
+
+export interface ChemicalDilutionSpec {
+  chemical_name: string;
+  recommended_dosage_per_liter: string;
+  tank_sizes_liters: number[];
+  compatibility_warnings: string[];
+  safe_water_ph_range: string;
+}
+
 export interface FinalResponse {
   response_id: string;
   request_id: string;
@@ -147,6 +175,9 @@ export interface FinalResponse {
   recommendations: string[];
   follow_up_questions?: string[];
   visualizations?: VisualizationData[];
+  parcel_intelligence?: ParcelIntelligence;
+  mandi_prices?: MandiMarketPrice[];
+  chemical_calculator?: ChemicalDilutionSpec;
   uncertainties_and_limitations: string[];
   verification_status: VerificationStatus;
   confidence_indicators: ConfidenceBreakdown;

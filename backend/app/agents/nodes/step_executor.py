@@ -69,6 +69,14 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                 notes_str = "; ".join(proc_res.diagnostic_notes) if proc_res and proc_res.diagnostic_notes else "Foliar image processed."
                 lesions_dict = [l.model_dump() for l in proc_res.detected_lesions] if proc_res else []
                 annotated_b64 = proc_res.annotated_preview_base64 if proc_res else None
+                original_b64 = None
+                if inp.storage_path and os.path.exists(inp.storage_path):
+                    try:
+                        with open(inp.storage_path, "rb") as f_orig:
+                            import base64
+                            original_b64 = f"data:image/jpeg;base64,{base64.b64encode(f_orig.read()).decode('ascii')}"
+                    except Exception:
+                        pass
 
                 img_type = proc_res.image_type if proc_res else "foliar"
                 soil_cls = proc_res.soil_classification if proc_res else None
@@ -84,6 +92,7 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                     "visual_findings": notes_str,
                     "detected_lesions": lesions_dict,
                     "annotated_preview_base64": annotated_b64,
+                    "original_preview_base64": original_b64,
                 }
                 img_findings.append(
                     f"Visual Inspection Telemetry ({'Soil/Ground' if img_type == 'soil' else 'Crop Foliage'}) for '{inp.filename}': "

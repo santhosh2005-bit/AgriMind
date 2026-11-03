@@ -3,7 +3,12 @@
 import logging
 from datetime import datetime, timezone
 from backend.app.schemas.enums import VerificationStatus
-from backend.app.schemas.response import FinalResponse
+from backend.app.schemas.response import (
+    FinalResponse,
+    ParcelIntelligence,
+    MandiMarketPrice,
+    ChemicalDilutionSpec,
+)
 from backend.app.schemas.verification import ConfidenceBreakdown
 from backend.app.agents.state import AgriMindState
 
@@ -65,6 +70,16 @@ def final_response_node(state: AgriMindState) -> AgriMindState:
     state.trace.completed_at = datetime.now(timezone.utc)
     state.trace.plan_id = state.execution_plan.plan_id if state.execution_plan else None
 
+    # FarmwiseAI Advanced Features
+    parcel_dict = synthesis.get("parcel_intelligence")
+    parcel_intel = ParcelIntelligence(**parcel_dict) if parcel_dict else None
+
+    mandi_list = synthesis.get("mandi_prices", [])
+    mandi_prices = [MandiMarketPrice(**m) if isinstance(m, dict) else m for m in mandi_list]
+
+    chem_dict = synthesis.get("chemical_calculator")
+    chemical_calc = ChemicalDilutionSpec(**chem_dict) if chem_dict else None
+
     state.final_response = FinalResponse(
         request_id=state.request.request_id,
         request_summary=summary,
@@ -75,6 +90,9 @@ def final_response_node(state: AgriMindState) -> AgriMindState:
         recommendations=recommendations,
         follow_up_questions=follow_up_questions,
         visualizations=visualizations,
+        parcel_intelligence=parcel_intel,
+        mandi_prices=mandi_prices,
+        chemical_calculator=chemical_calc,
         uncertainties_and_limitations=uncertainties,
         source_references=sources,
         verification_status=verification_status,
