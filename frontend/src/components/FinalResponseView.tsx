@@ -48,6 +48,214 @@ const LANGUAGE_LABELS: Record<string, string> = {
   auto: 'Auto Detected',
 };
 
+const UI_I18N: Record<string, Record<string, string>> = {
+  en: {
+    cvAnnotations: 'CV Annotations',
+    originalPhoto: 'Original Photo',
+    annotatedView: 'Annotated View',
+    cadastralTitle: 'Cadastral Parcel & Land Geometry Visualizer',
+    khasraBadge: 'RoR / Khasra Record',
+    cadastralSubtitle: 'Field boundary telemetry, survey demarcation, and geospatial coordinates',
+    villageTaluk: 'Village & Taluk',
+    districtState: 'District & State',
+    parcelExtent: 'Parcel Extent',
+    centroidCoords: 'Centroid Coordinates',
+    openGis: 'Open in OpenStreetMap / Bhuvan GIS',
+    cadastralTelemetryBadge: 'Cadastral Boundary Telemetry: Synced with Land Registry',
+    mandiTitle: 'Live APMC Mandi Commodity Wholesale Rates',
+    enamBadge: 'e-NAM Telemetry',
+    mandiSubtitle: 'Wholesale mandi arrivals, modal price benchmarks, and real-time market trends',
+    liveFeeds: 'Live Wholesale Feeds',
+    perQuintal: '/ Quintal',
+    range: 'Range',
+    tankTitle: 'Tank-Mix Chemical Compatibility & Dilution Calculator',
+    fieldDosageBadge: 'Field Dosage Spec',
+    tankSubtitle: 'Interactive tank volume scaling, safe water pH tolerances, and compatibility warnings',
+    safeWaterPh: 'Safe Water pH',
+    recommendedFormulation: 'Recommended Active Formulation',
+    standardRate: 'Standard Rate',
+    selectTankVolume: 'Select Sprayer Tank Volume:',
+    clickToCompute: 'Click to dynamically compute tank requirement',
+    knapsack15: '15 L Knapsack / Backpack',
+    drum100: '100 L Power Sprayer Drum',
+    boom500: '500 L Tractor Boom Sprayer',
+    calcDosageFor: 'Calculated Dosage for',
+    waterVolume: 'Water Volume',
+    tankSafeguards: 'Tank-Mix Compatibility & Chemical Safety Protocols:',
+  },
+  ta: {
+    cvAnnotations: 'கணினி பார்வை பகுப்பாய்வு',
+    originalPhoto: 'அசல் புகைப்படம்',
+    annotatedView: 'குறியிடப்பட்ட பார்வை',
+    cadastralTitle: 'நில எல்லை வரைபடம் மற்றும் சர்வே எண் விபரம் (RoR)',
+    khasraBadge: 'பட்டா / சிட்டா பதிவு',
+    cadastralSubtitle: 'வயல் எல்லை அளவீடுகள், சர்வே எண் மற்றும் ஜிபிஎஸ் ஒருங்கிணைப்புகள்',
+    villageTaluk: 'கிராமம் & வட்டம்',
+    districtState: 'மாவட்டம் & மாநிலம்',
+    parcelExtent: 'நிலப் பரப்பு',
+    centroidCoords: 'மைய அட்சரேகை & தீர்க்கரேகை',
+    openGis: 'OpenStreetMap / Bhuvan வரைபடத்தில் காண்க',
+    cadastralTelemetryBadge: 'நில வருவாய் ஆவணங்களுடன் ஒப்பிடப்பட்டது',
+    mandiTitle: 'நேரடி உழவர் சந்தை / ஏபிஎம்சி மண்டி விலை நிலவரம்',
+    enamBadge: 'இ-நாம் (e-NAM) நேரலை',
+    mandiSubtitle: 'மொத்த விற்பனை சந்தை விலை, மாதிரி விலை மற்றும் தினசரி விலை போக்கு',
+    liveFeeds: 'நேரடி சந்தை விலை',
+    perQuintal: '/ குவிண்டால்',
+    range: 'விலை வரம்பு',
+    tankTitle: 'தெளிப்பான் மருந்து கலவை மற்றும் நீர்த்தல் கணக்கீடு',
+    fieldDosageBadge: 'பரிந்துரைக்கப்பட்ட அளவு',
+    tankSubtitle: 'தெளிப்பான் தொட்டி கொள்ளளவு, பாதுகாப்பான நீர் pH மற்றும் கலவை எச்சரிக்கைகள்',
+    safeWaterPh: 'பாதுகாப்பான நீர் pH',
+    recommendedFormulation: 'பரிந்துரைக்கப்பட்ட மருந்து / உரம்',
+    standardRate: 'நிலையான பரிந்துரை அளவு',
+    selectTankVolume: 'தெளிப்பான் தொட்டி அளவைத் தேர்ந்தெடுக்கவும்:',
+    clickToCompute: 'கணக்கிட தொட்டி அளவை கிளிக் செய்யவும்',
+    knapsack15: '15 லிட்டர் கைத்தெளிப்பான் (Backpack)',
+    drum100: '100 லிட்டர் பவர் ஸ்ப்ரேயர் டிரம்',
+    boom500: '500 லிட்டர் டிராக்டர் பூம் ஸ்ப்ரேயர்',
+    calcDosageFor: 'தேவையான மருந்தின் அளவு',
+    waterVolume: 'தண்ணீர் அளவு',
+    tankSafeguards: 'மருந்து கலவை பாதுகாப்பு விதிமுறைகள் & எச்சரிக்கைகள்:',
+  },
+  hi: {
+    cvAnnotations: 'एआई कंप्यूटर विजन',
+    originalPhoto: 'मूल फोटो',
+    annotatedView: 'विश्लेषित दृश्य',
+    cadastralTitle: 'भू-अभिलेख एवं खसरा पार्सल नक्शा विज़ुअलाइज़र',
+    khasraBadge: 'खसरा / खतौनी रिकॉर्ड',
+    cadastralSubtitle: 'खेत सीमा माप, सर्वेक्षण सीमांकन एवं भू-स्थानिक निर्देशांक',
+    villageTaluk: 'ग्राम एवं तहसील',
+    districtState: 'जिला एवं राज्य',
+    parcelExtent: 'क्षेत्रफल (रकबा)',
+    centroidCoords: 'केंद्र निर्देशांक',
+    openGis: 'OpenStreetMap / भुवन जीआईएस में देखें',
+    cadastralTelemetryBadge: 'राजस्व भू-अभिलेखों के साथ सत्यापित',
+    mandiTitle: 'लाइव कृषि उपज मंडी थोक भाव (e-NAM)',
+    enamBadge: 'ई-नाम लाइव भाव',
+    mandiSubtitle: 'मंडी आवक, मॉडल थोक मूल्य एवं वास्तविक समय मूल्य रुझान',
+    liveFeeds: 'लाइव थोक टेलीमेट्री',
+    perQuintal: '/ क्विंटल',
+    range: 'भाव दायरा',
+    tankTitle: 'स्प्रेयर टैंक-मिक्स रासायनिक अनुकूलता एवं खुराक कैलकुलेटर',
+    fieldDosageBadge: 'खुराक विनिर्देश',
+    tankSubtitle: 'टैंक क्षमता अनुसार खुराक गणना, सुरक्षित जल pH एवं अनुकूलता सावधानियां',
+    safeWaterPh: 'सुरक्षित जल pH',
+    recommendedFormulation: 'अनुशंसित सक्रिय कीटनाशक / उर्वरक',
+    standardRate: 'मानक दर',
+    selectTankVolume: 'स्प्रेयर टैंक की क्षमता चुनें:',
+    clickToCompute: 'खुराक की गणना के लिए क्लिक करें',
+    knapsack15: '15 लीटर नैपसैक / पीठ का स्प्रेयर',
+    drum100: '100 लीटर पावर स्प्रेयर ड्रम',
+    boom500: '500 लीटर ट्रैक्टर बूम स्प्रेयर',
+    calcDosageFor: 'टैंक के लिए आवश्यक कुल खुराक',
+    waterVolume: 'पानी की मात्रा',
+    tankSafeguards: 'टैंक-मिक्स सुरक्षा दिशा-निर्देश एवं सावधानियां:',
+  },
+  te: {
+    cvAnnotations: 'కంప్యూటర్ విజన్ విశ్లేషణ',
+    originalPhoto: 'అసలు ఫోటో',
+    annotatedView: 'గుర్తించబడిన వీక్షణ',
+    cadastralTitle: 'భూమి సర్వే నంబర్ మరియు సరిహద్దు పటం (RoR)',
+    khasraBadge: 'పట్టాదారు పాస్‌బుక్ / రికార్డు',
+    cadastralSubtitle: 'పొలం సరిహద్దు కొలతలు, సర్వే డిమార్కేషన్ మరియు జియో కోఆర్డినేట్లు',
+    villageTaluk: 'గ్రామం & మండలం',
+    districtState: 'జిల్లా & రాష్ట్రం',
+    parcelExtent: 'విస్తీర్ణం',
+    centroidCoords: 'కేంద్ర కోఆర్డినేట్లు',
+    openGis: 'OpenStreetMap / భువన్‌లో చూడండి',
+    cadastralTelemetryBadge: 'భూ రికార్డులతో ధృవీకరించబడింది',
+    mandiTitle: 'ప్రత్యక్ష మార్కెట్ యార్డ్ / మండి ధరలు',
+    enamBadge: 'ఈ-నామ్ (e-NAM) ప్రత్యక్షం',
+    mandiSubtitle: 'మొత్తం మార్కెట్ రాకలు, మోడల్ ధర మరియు రోజువారీ ధర సరళి',
+    liveFeeds: 'ప్రత్యక్ష మండి ఫీడ్లు',
+    perQuintal: '/ క్వింటాల్',
+    range: 'ధర శ్రేణి',
+    tankTitle: 'స్ప్రేయర్ ట్యాంక్-మిక్స్ రసాయన మోతాదు గణన',
+    fieldDosageBadge: 'సిఫార్సు చేసిన మోతాదు',
+    tankSubtitle: 'ట్యాంక్ సామర్థ్యం ప్రకారం మోతాదు లెక్కించడం, సురక్షిత నీటి pH',
+    safeWaterPh: 'సురక్షిత నీటి pH',
+    recommendedFormulation: 'సిఫార్సు చేసిన రసాయన మందు / ఎరువు',
+    standardRate: 'ప్రామాణిక మోతాదు',
+    selectTankVolume: 'స్ప్రేయర్ ట్యాంక్ పరిమాణాన్ని ఎంచుకోండి:',
+    clickToCompute: 'మోతాదు లెక్కించడానికి క్లిక్ చేయండి',
+    knapsack15: '15 లీటర్ల నాప్‌సాక్ స్ప్రేయర్',
+    drum100: '100 లీటర్ల పవర్ స్ప్రేయర్ డ్రమ్',
+    boom500: '500 లీటర్ల ట్రాక్టర్ బూమ్ స్ప్రేయర్',
+    calcDosageFor: 'అవసరమైన మొత్తం మందు మోతాదు',
+    waterVolume: 'నీటి పరిమాణం',
+    tankSafeguards: 'ట్యాంక్-మిక్స్ భద్రతా నియమాలు & జాగ్రత్తలు:',
+  },
+  ml: {
+    cvAnnotations: 'കമ്പ്യൂട്ടർ വിഷൻ വിശകലനം',
+    originalPhoto: 'യഥാർത്ഥ ഫോട്ടോ',
+    annotatedView: 'വിശകലനം ചെയ്ത കാഴ്ച',
+    cadastralTitle: 'ഭൂമി സർവേ നമ്പറും അതിർത്തി മാപ്പും (RoR)',
+    khasraBadge: 'ഭൂരേഖ / പട്ടയം',
+    cadastralSubtitle: 'ഫീൽഡ് അതിർത്തി അളവുകൾ, സർവേ നമ്പർ, ജിയോ കോർഡിനേറ്റുകൾ',
+    villageTaluk: 'ഗ്രാമം & താലൂക്ക്',
+    districtState: 'ജില്ല & സംസ്ഥാനം',
+    parcelExtent: 'വിസ്തീർണം',
+    centroidCoords: 'കേന്ദ്ര കോർഡിനേറ്റുകൾ',
+    openGis: 'OpenStreetMap / ഭുവൻ മാപ്പിൽ കാണുക',
+    cadastralTelemetryBadge: 'ഭൂരേഖകളുമായി സമന്വയിപ്പിച്ചു',
+    mandiTitle: 'തത്സമയ കാർഷിക വിപണി വിലനിലവാരം',
+    enamBadge: 'ഇ-നാം ലൈവ് ഫീഡ്',
+    mandiSubtitle: 'മാർക്കറ്റ് വരവുകൾ, മോഡൽ വില, വിപണി പ്രവണതകൾ',
+    liveFeeds: 'തത്സമയ വിപണി നിരക്കുകൾ',
+    perQuintal: '/ ക്വിന്റൽ',
+    range: 'വില പരിധി',
+    tankTitle: 'സ്പ്രേയർ ടാങ്ക് മിശ്രിത കണക്കുകൂട്ടൽ',
+    fieldDosageBadge: 'ശുപാർശ ചെയ്യുന്ന അളവ്',
+    tankSubtitle: 'സ്പ്രേയർ ടാങ്ക് വ്യാപ്തി, സുരക്ഷിതമായ ജല pH, മിശ്രിത മുൻകരുതലുകൾ',
+    safeWaterPh: 'സുരക്ഷിതമായ ജല pH',
+    recommendedFormulation: 'ശുപാർശ ചെയ്യുന്ന മരുന്ന്',
+    standardRate: 'സാധാരണ നിരക്ക്',
+    selectTankVolume: 'സ്പ്രേയർ ടാങ്ക് വ്യാപ്തി തിരഞ്ഞെടുക്കുക:',
+    clickToCompute: 'കണക്കുകൂട്ടാൻ ക്ലിക്ക് ചെയ്യുക',
+    knapsack15: '15 ലിറ്റർ ബാക്ക്പാക്ക് സ്പ്രേയർ',
+    drum100: '100 ലിറ്റർ പവർ സ്പ്രേയർ ഡ്രം',
+    boom500: '500 ലിറ്റർ ട്രാക്ടർ ബൂം സ്ಪ್ರേയർ',
+    calcDosageFor: 'ആവശ്യമായ മരുന്നിന്റെ അളവ്',
+    waterVolume: 'വെള്ളത്തിന്റെ അളവ്',
+    tankSafeguards: 'മിശ്രിത സുരക്ഷാ മാർഗ്ഗനിർദ്ദേശങ്ങൾ:',
+  },
+  kn: {
+    cvAnnotations: 'ಕಂಪ್ಯೂಟರ್ ದೃಷ್ಟಿ ವಿಶ್ಲೇಷಣೆ',
+    originalPhoto: 'ಮೂಲ ಫೋಟೋ',
+    annotatedView: 'ಗುರುತಿಸಲಾದ ನೋಟ',
+    cadastralTitle: 'ಭೂ ಸರ್ವೇ ನಂಬರ್ ಮತ್ತು ಗಡಿ ನಕ್ಷೆ (RoR)',
+    khasraBadge: 'ಆರ್‌ಟಿ / ಪಹಣಿ ದಾಖಲೆ',
+    cadastralSubtitle: 'ಜಮೀನು ಗಡಿ ಅಳತೆಗಳು, ಸರ್ವೇ ಗಡಿ ಗುರುತು ಮತ್ತು ಜಿಯೋ ನಿರ್ದೇಶಾಂಕಗಳು',
+    villageTaluk: 'ಗ್ರಾಮ & ತಾಲೂಕು',
+    districtState: 'ಜಿಲ್ಲೆ & ರಾಜ್ಯ',
+    parcelExtent: 'ವಿಸ್ತೀರ್ಣ',
+    centroidCoords: 'ಕೇಂದ್ರ ನಿರ್ದೇಶಾಂಕಗಳು',
+    openGis: 'OpenStreetMap / ಭುವನ್ ನಕ್ಷೆಯಲ್ಲಿ ನೋಡಿ',
+    cadastralTelemetryBadge: 'ಭೂ ದಾಖಲೆಗಳೊಂದಿಗೆ ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ',
+    mandiTitle: 'ನೇರ ಮಾರುಕಟ್ಟೆ ಎಪಿಎಂಸಿ ಬೆಲೆಗಳು',
+    enamBadge: 'ಇ-ನ್ಯಾಮ್ (e-NAM) ಲೈವ್',
+    mandiSubtitle: 'ಮಾರುಕಟ್ಟೆ ಆವಕ, ಮಾದರಿ ಬೆಲೆ ಮತ್ತು ನೈಜ ಸಮಯದ ಮಾರುಕಟ್ಟೆ ಪ್ರವೃತ್ತಿ',
+    liveFeeds: 'ನೇರ ಮಾರುಕಟ್ಟೆ ದರಗಳು',
+    perQuintal: '/ ಕ್ವಿಂಟಾಲ್',
+    range: 'ಬೆಲೆ ಶ್ರೇಣಿ',
+    tankTitle: 'ಸ್ಪ್ರೇಯರ್ ಟ್ಯಾಂಕ್-ಮಿಶ್ರಣ ಮತ್ತು ಡೋಸೇಜ್ ಕ್ಯಾಲ್ಕುಲೇಟರ್',
+    fieldDosageBadge: 'ಶಿಫಾರಸು ಮಾಡಿದ ಪ್ರಮಾಣ',
+    tankSubtitle: 'ಟ್ಯಾಂಕ್ ಸಾಮರ್ಥ್ಯದ ಪ್ರಕಾರ ಡೋಸೇಜ್ ಲೆಕ್ಕಾಚಾರ, ಸುರಕ್ಷಿತ ನೀರಿನ pH',
+    safeWaterPh: 'ಸುರಕ್ಷಿತ ನೀರಿನ pH',
+    recommendedFormulation: 'ಶಿಫಾರಸು ಮಾಡಿದ ರಾಸಾಯನಿಕ / ಔಷಧ',
+    standardRate: 'ಪ್ರಮಾಣಿತ ದರ',
+    selectTankVolume: 'ಸ್ಪ್ರೇಯರ್ ಟ್ಯಾಂಕ್ ಗಾತ್ರವನ್ನು ಆರಿಸಿ:',
+    clickToCompute: 'ಡೋಸೇಜ್ ಲೆಕ್ಕಹಾಕಲು ಕ್ಲಿಕ್ ಮಾಡಿ',
+    knapsack15: '15 ಲೀಟರ್ ನ್ಯಾಪ್‌ಸ್ಯಾಕ್ ಸ್ಪ್ರೇಯರ್',
+    drum100: '100 ಲೀಟರ್ ಪವರ್ ಸ್ಪ್ರೇಯರ್ ಡ್ರಮ್',
+    boom500: '500 ಲೀಟರ್ ಟ್ರ್ಯಾಕ್ಟರ್ ಬೂಮ್ ಸ್ಪ್ರೇಯರ್',
+    calcDosageFor: 'ಅಗತ್ಯವಿರುವ ಒಟ್ಟು ಔಷಧದ ಪ್ರಮಾಣ',
+    waterVolume: 'ನೀರಿನ ಪ್ರಮಾಣ',
+    tankSafeguards: 'ಟ್ಯಾಂಕ್-ಮಿಶ್ರಣ ಸುರಕ್ಷತಾ ಮುನ್ನೆಚ್ಚರಿಕೆಗಳು:',
+  },
+};
+
+
 export const FinalResponseView: React.FC<FinalResponseViewProps> = ({
   response,
   executionPlan,
@@ -142,6 +350,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
 
   const langKey = (response.language || 'en').toLowerCase();
   const displayLang = LANGUAGE_LABELS[langKey] || response.language || 'English';
+  const t = UI_I18N[langKey] || UI_I18N['en'];
 
   // Check if an image was analyzed in this run
   const imageEvidence = response.retrieved_evidence?.find(
@@ -267,7 +476,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
                   title="Display computer vision processed view with annotated lesion bounding boxes / clod aggregates"
                 >
                   <Layers className="w-3 h-3 text-emerald-400" />
-                  <span>CV Annotations</span>
+                  <span>{t.cvAnnotations}</span>
                 </button>
                 <button
                   type="button"
@@ -280,7 +489,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
                   title="Display unprocessed camera photograph"
                 >
                   <ImageIcon className="w-3 h-3 text-slate-300" />
-                  <span>Original Photo</span>
+                  <span>{t.originalPhoto}</span>
                 </button>
               </div>
 
@@ -304,7 +513,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
                 }}
               />
               <div className="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-semibold text-emerald-300 border border-emerald-500/30">
-                {imageDisplayMode === 'annotated' ? 'Annotated View' : 'Original Photo'}
+                {imageDisplayMode === 'annotated' ? t.annotatedView : t.originalPhoto}
               </div>
               <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-slate-300 flex items-center gap-1">
                 <Eye className="w-3 h-3 text-emerald-400" />
@@ -445,13 +654,13 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               </div>
               <div>
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <span>Cadastral Parcel & Land Geometry Visualizer</span>
+                  <span>{t.cadastralTitle}</span>
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                    RoR / Khasra Record
+                    {t.khasraBadge}
                   </span>
                 </h4>
                 <p className="text-xs text-slate-400">
-                  Field boundary telemetry, survey demarcation, and geospatial coordinates
+                  {t.cadastralSubtitle}
                 </p>
               </div>
             </div>
@@ -475,21 +684,21 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
           {/* Metadata Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] uppercase font-semibold text-slate-500 block">Village & Taluk</span>
+              <span className="text-[10px] uppercase font-semibold text-slate-500 block">{t.villageTaluk}</span>
               <span className="text-xs font-bold text-slate-200 truncate block mt-0.5">{response.parcel_intelligence.village || 'Coimbatore Rural'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] uppercase font-semibold text-slate-500 block">District & State</span>
+              <span className="text-[10px] uppercase font-semibold text-slate-500 block">{t.districtState}</span>
               <span className="text-xs font-bold text-slate-200 truncate block mt-0.5">{response.parcel_intelligence.district || 'Coimbatore, Tamil Nadu'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] uppercase font-semibold text-slate-500 block">Parcel Extent</span>
+              <span className="text-[10px] uppercase font-semibold text-slate-500 block">{t.parcelExtent}</span>
               <span className="text-xs font-bold text-emerald-300 block mt-0.5">
                 {response.parcel_intelligence.area_acres || 2.4} Acres ({((response.parcel_intelligence.area_acres || 2.4) * 0.404686).toFixed(2)} Ha)
               </span>
             </div>
             <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] uppercase font-semibold text-slate-500 block">Centroid Coordinates</span>
+              <span className="text-[10px] uppercase font-semibold text-slate-500 block">{t.centroidCoords}</span>
               <span className="text-xs font-mono font-bold text-teal-300 block mt-0.5">
                 {response.parcel_intelligence.latitude}° N, {response.parcel_intelligence.longitude}° E
               </span>
@@ -559,7 +768,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
               <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Cadastral Boundary Telemetry: Synced with Digital Land Parcel Registry</span>
+                <span>{t.cadastralTelemetryBadge}</span>
               </div>
               <a
                 href={`https://www.openstreetmap.org/?mlat=${response.parcel_intelligence.latitude}&mlon=${response.parcel_intelligence.longitude}#map=17/${response.parcel_intelligence.latitude}/${response.parcel_intelligence.longitude}`}
@@ -567,7 +776,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
                 rel="noopener noreferrer"
                 className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5"
               >
-                <span>Open in OpenStreetMap / Bhuvan GIS</span>
+                <span>{t.openGis}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -585,19 +794,19 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               </div>
               <div>
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <span>Live APMC Mandi Commodity Wholesale Rates</span>
+                  <span>{t.mandiTitle}</span>
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/40">
-                    e-NAM Telemetry
+                    {t.enamBadge}
                   </span>
                 </h4>
                 <p className="text-xs text-slate-400">
-                  Wholesale mandi arrivals, modal price benchmarks, and real-time market trends
+                  {t.mandiSubtitle}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1.5 text-[11px] text-teal-400 font-mono">
               <span className="w-2 h-2 rounded-full bg-teal-400 animate-ping" />
-              <span>Live Wholesale Feeds</span>
+              <span>{t.liveFeeds}</span>
             </div>
           </div>
 
@@ -635,11 +844,11 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
                   <span className="text-xl font-mono font-extrabold text-white">
                     ₹{mandi.modal_price_rs_qtl.toLocaleString()}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-medium">/ Quintal</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{t.perQuintal}</span>
                 </div>
 
                 <div className="text-[10px] text-slate-400 flex items-center justify-between border-t border-slate-900 pt-1.5">
-                  <span>Range: ₹{mandi.min_price} - ₹{mandi.max_price}</span>
+                  <span>{t.range}: ₹{mandi.min_price} - ₹{mandi.max_price}</span>
                   <span className="text-teal-400 font-mono truncate max-w-[130px]">{mandi.market}</span>
                 </div>
               </div>
@@ -658,29 +867,29 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               </div>
               <div>
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <span>Tank-Mix Chemical Compatibility & Dilution Calculator</span>
+                  <span>{t.tankTitle}</span>
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                    Field Dosage Spec
+                    {t.fieldDosageBadge}
                   </span>
                 </h4>
                 <p className="text-xs text-slate-400">
-                  Interactive tank volume scaling, safe water pH tolerances, and compatibility warnings
+                  {t.tankSubtitle}
                 </p>
               </div>
             </div>
             <div className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-slate-950 text-emerald-400 border border-emerald-500/30">
-              Safe Water pH: {response.chemical_calculator.safe_water_ph_range}
+              {t.safeWaterPh}: {response.chemical_calculator.safe_water_ph_range}
             </div>
           </div>
 
           {/* Treatment Formulation Banner */}
           <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <span className="text-[10px] uppercase font-semibold text-slate-500 block">Recommended Active Formulation</span>
+              <span className="text-[10px] uppercase font-semibold text-slate-500 block">{t.recommendedFormulation}</span>
               <span className="text-xs font-bold text-white mt-0.5 block">{response.chemical_calculator.chemical_name}</span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] uppercase font-semibold text-slate-500 block">Standard Rate</span>
+              <span className="text-[10px] uppercase font-semibold text-slate-500 block">{t.standardRate}</span>
               <span className="text-xs font-mono font-bold text-emerald-300 mt-0.5 block">
                 {response.chemical_calculator.recommended_dosage_per_liter}
               </span>
@@ -690,8 +899,8 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
           {/* Interactive Sprayer Tank Selector */}
           <div className="space-y-2">
             <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
-              <span>Select Sprayer Tank Volume:</span>
-              <span className="text-[10px] text-slate-400">Click to dynamically compute tank requirement</span>
+              <span>{t.selectTankVolume}</span>
+              <span className="text-[10px] text-slate-400">{t.clickToCompute}</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {[
@@ -732,14 +941,14 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/40 to-teal-950/40 border border-emerald-500/40 flex flex-wrap items-center justify-between gap-2">
                 <div className="space-y-0.5">
                   <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
-                    Calculated Dosage for {selectedTankSize}L Tank:
+                    {t.calcDosageFor} {selectedTankSize}L:
                   </span>
                   <div className="text-lg font-mono font-black text-white">
                     {formattedAmount} <span className="text-xs font-normal text-slate-400">({ratePerL} {isMl ? 'mL' : 'g'} per liter)</span>
                   </div>
                 </div>
                 <div className="text-right text-[11px] text-teal-300 font-mono">
-                  Water Volume: {selectedTankSize} Liters
+                  {t.waterVolume}: {selectedTankSize} L
                 </div>
               </div>
             );
@@ -750,7 +959,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
             <div className="space-y-1.5 pt-1">
               <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-                <span>Tank-Mix Compatibility & Chemical Safety Protocols:</span>
+                <span>{t.tankSafeguards}</span>
               </span>
               <div className="space-y-1">
                 {response.chemical_calculator.compatibility_warnings.map((warn, wIdx) => (

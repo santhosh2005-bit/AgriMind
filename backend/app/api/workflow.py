@@ -8,6 +8,7 @@ from backend.app.schemas.request import UserRequest
 from backend.app.schemas.response import FinalResponse
 from backend.app.schemas.plan import ExecutionPlan
 from backend.app.schemas.trace import ExecutionTrace
+from backend.app.schemas.verification import VerificationResult
 from backend.app.services.workflow_service import workflow_service
 
 router = APIRouter(prefix="/v1/workflow", tags=["Agentic Workflow"])
@@ -16,6 +17,7 @@ router = APIRouter(prefix="/v1/workflow", tags=["Agentic Workflow"])
 class WorkflowRunResponse(BaseModel):
     final_response: FinalResponse
     execution_plan: Optional[ExecutionPlan] = None
+    verification_result: Optional[VerificationResult] = None
     trace: ExecutionTrace
     execution_errors: list[str] = Field(default_factory=list)
 
@@ -40,6 +42,7 @@ def execute_workflow(request: UserRequest):
         return WorkflowRunResponse(
             final_response=final_state.final_response,
             execution_plan=final_state.execution_plan,
+            verification_result=final_state.verification_result,
             trace=final_state.trace,
             execution_errors=final_state.execution_errors,
         )

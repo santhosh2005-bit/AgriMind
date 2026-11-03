@@ -17,7 +17,17 @@ export const VerificationAuditView: React.FC<VerificationAuditViewProps> = ({
   verification,
   recoveryEvents = [],
 }) => {
-  if (!verification) return null;
+  if (!verification) {
+    return (
+      <div className="glass-panel-glow rounded-2xl p-8 border border-slate-800 text-center space-y-3">
+        <ShieldCheck className="w-12 h-12 text-emerald-400 mx-auto opacity-70" />
+        <h3 className="text-base font-bold text-white">Verification Critic & Heuristic Audit</h3>
+        <p className="text-xs text-slate-400 max-w-md mx-auto">
+          No active verification audit record loaded yet. Submit an inquiry using the workspace above to trigger autonomous Critic audits, grounding verification, and confidence telemetry.
+        </p>
+      </div>
+    );
+  }
 
   const conf = verification.confidence;
 
