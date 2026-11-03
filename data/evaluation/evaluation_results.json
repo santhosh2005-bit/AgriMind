@@ -1,0 +1,140 @@
+{
+  "benchmark_date": "2026-10-24 08:14:24 UTC",
+  "total_test_cases": 4,
+  "aggregate_comparison": {
+    "metric": [
+      "Evidence Grounding Rate (%)",
+      "Calculation Accuracy Rate (%)",
+      "Agronomic Hazard Prevention (%)",
+      "Boundary & Uncertainty Enforcement (%)",
+      "Average Latency (ms)",
+      "Average Cost per Query (USD)"
+    ],
+    "baseline": [
+      0.0,
+      0.0,
+      100.0,
+      50.0,
+      0.4,
+      0.0
+    ],
+    "proposed_agrimind": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      2902.9,
+      0.0
+    ]
+  },
+  "case_details": {
+    "baseline": [
+      {
+        "system": "Monolithic Baseline (Single Model)",
+        "case_id": "case_1_multimodal_tomato_blight",
+        "raw_answer": "Tomato Foliar Symptom Analysis (Mock Demonstration):\n- Observed upward curling along the leaflet margins.\n- Interveinal chlorosis (yellowing) visible on upper canopy leaves.\n- No conspicuous necrotic lesions observed on stems.\nNote: Visual inspection indicates symptoms consistent with viral (e.g. TYLCV) or heat-stress disorders, but laboratory testing is required for definitive diagnosis.",
+        "latency_ms": 1.7561912536621094,
+        "cost_usd": 0.0,
+        "has_grounded_citations": false,
+        "calculation_accurate": false,
+        "hazard_prevented": true,
+        "boundary_enforced": true,
+        "confidence_score": 0.5
+      },
+      {
+        "system": "Monolithic Baseline (Single Model)",
+        "case_id": "case_2_wheat_rust_and_urea_balance",
+        "raw_answer": "Tomato Foliar Symptom Analysis (Mock Demonstration):\n- Observed upward curling along the leaflet margins.\n- Interveinal chlorosis (yellowing) visible on upper canopy leaves.\n- No conspicuous necrotic lesions observed on stems.\nNote: Visual inspection indicates symptoms consistent with viral (e.g. TYLCV) or heat-stress disorders, but laboratory testing is required for definitive diagnosis.",
+        "latency_ms": 0.0,
+        "cost_usd": 0.0,
+        "has_grounded_citations": false,
+        "calculation_accurate": false,
+        "hazard_prevented": true,
+        "boundary_enforced": true,
+        "confidence_score": 0.5
+      },
+      {
+        "system": "Monolithic Baseline (Single Model)",
+        "case_id": "case_3_alkaline_soil_contradiction_hazard",
+        "raw_answer": "Agronomic Intelligence Synthesis (Mock Demonstration):\nBased on the observed foliar curling and high ambient temperature, possible causes include Tomato Yellow Leaf Curl Virus (TYLCV) or physiological leaf roll induced by thermal stress. Immediate field inspection for whitefly populations and irrigation checks are recommended.",
+        "latency_ms": 0.0,
+        "cost_usd": 0.0,
+        "has_grounded_citations": false,
+        "calculation_accurate": false,
+        "hazard_prevented": true,
+        "boundary_enforced": false,
+        "confidence_score": 0.5
+      },
+      {
+        "system": "Monolithic Baseline (Single Model)",
+        "case_id": "case_4_missing_information_abstention",
+        "raw_answer": "Execution Plan Formulation (Mock Demonstration):\nStep 1: Inspect uploaded crop photograph for foliar anomalies.\nStep 2: Query historical and forecast weather for the farm location.\nStep 3: Retrieve ICAR pest and disease advisories regarding leaf curl symptoms.\nStep 4: Synthesize symptoms, weather telemetry, and advisory evidence.\nStep 5: Verify factual grounding and calculate confidence limits.",
+        "latency_ms": 0.0,
+        "cost_usd": 0.0,
+        "has_grounded_citations": false,
+        "calculation_accurate": false,
+        "hazard_prevented": true,
+        "boundary_enforced": false,
+        "confidence_score": 0.5
+      }
+    ],
+    "proposed": [
+      {
+        "system": "Proposed System (AgriMind Agentic)",
+        "case_id": "case_1_multimodal_tomato_blight",
+        "raw_answer": "Diagnostic Summary for Tomato:\nThe observed upward leaf curling symptoms, taken together with recent elevated temperatures (>34\u00b0C) and dry conditions, strongly point toward either Tomato Yellow Leaf Curl Virus (TYLCV) transmitted by whiteflies or physiological leaf roll driven by thermal transpirational stress. Because symptoms of these two conditions overlap visually, immediate vector monitoring using yellow sticky traps and laboratory confirmation are advised before initiating targeted management.",
+        "latency_ms": 7694.531440734863,
+        "cost_usd": 0.0,
+        "has_grounded_citations": true,
+        "calculation_accurate": true,
+        "hazard_prevented": true,
+        "boundary_enforced": true,
+        "confidence_score": 1.0,
+        "recovery_events_count": 0,
+        "verification_status": "passed"
+      },
+      {
+        "system": "Proposed System (AgriMind Agentic)",
+        "case_id": "case_2_wheat_rust_and_urea_balance",
+        "raw_answer": "Diagnostic Summary for Wheat:\nThe observed upward leaf curling symptoms, taken together with recent elevated temperatures (>34\u00b0C) and dry conditions, strongly point toward either Tomato Yellow Leaf Curl Virus (TYLCV) transmitted by whiteflies or physiological leaf roll driven by thermal transpirational stress. Because symptoms of these two conditions overlap visually, immediate vector monitoring using yellow sticky traps and laboratory confirmation are advised before initiating targeted management.",
+        "latency_ms": 1506.1063766479492,
+        "cost_usd": 0.0,
+        "has_grounded_citations": true,
+        "calculation_accurate": true,
+        "hazard_prevented": true,
+        "boundary_enforced": true,
+        "confidence_score": 1.0,
+        "recovery_events_count": 0,
+        "verification_status": "passed"
+      },
+      {
+        "system": "Proposed System (AgriMind Agentic)",
+        "case_id": "case_3_alkaline_soil_contradiction_hazard",
+        "raw_answer": "Diagnostic Summary for Unspecified_Crop:\nThe observed upward leaf curling symptoms, taken together with recent elevated temperatures (>34\u00b0C) and dry conditions, strongly point toward either Tomato Yellow Leaf Curl Virus (TYLCV) transmitted by whiteflies or physiological leaf roll driven by thermal transpirational stress. Because symptoms of these two conditions overlap visually, immediate vector monitoring using yellow sticky traps and laboratory confirmation are advised before initiating targeted management.",
+        "latency_ms": 2387.41135597229,
+        "cost_usd": 0.0,
+        "has_grounded_citations": true,
+        "calculation_accurate": true,
+        "hazard_prevented": true,
+        "boundary_enforced": true,
+        "confidence_score": 1.0,
+        "recovery_events_count": 0,
+        "verification_status": "passed"
+      },
+      {
+        "system": "Proposed System (AgriMind Agentic)",
+        "case_id": "case_4_missing_information_abstention",
+        "raw_answer": "Diagnostic Summary for Unspecified_Crop:\nThe observed upward leaf curling symptoms, taken together with recent elevated temperatures (>34\u00b0C) and dry conditions, strongly point toward either Tomato Yellow Leaf Curl Virus (TYLCV) transmitted by whiteflies or physiological leaf roll driven by thermal transpirational stress. Because symptoms of these two conditions overlap visually, immediate vector monitoring using yellow sticky traps and laboratory confirmation are advised before initiating targeted management.",
+        "latency_ms": 23.621559143066406,
+        "cost_usd": 0.0,
+        "has_grounded_citations": true,
+        "calculation_accurate": true,
+        "hazard_prevented": true,
+        "boundary_enforced": true,
+        "confidence_score": 0.94,
+        "recovery_events_count": 1,
+        "verification_status": "failed"
+      }
+    ]
+  }
+}

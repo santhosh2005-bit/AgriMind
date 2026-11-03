@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-emerald-500/30 selection:text-emerald-300;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.8);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 1);
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.4);
+}
+
+.glass-panel-glow {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.1);
+}
+
+/* Print optimizations for advisory report */
+@media print {
+  /* Set standard margins */
+  @page {
+    margin: 1.2cm;
+    size: auto;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+  }
+
+  /* Hide interactive UI, headers, inputs, navigation, and workspace */
+  .no-print,
+  header,
+  nav,
+  footer,
+  button,
+  form,
+  section[aria-label="Inquiry Workspace"],
+  [aria-label="Inquiry Workspace"],
+  .glass-panel-glow:has(textarea),
+  textarea,
+  input {
+    display: none !important;
+  }
+
+  /* Reset panels for clean paper layout */
+  .glass-panel,
+  .glass-panel-glow {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure text colors are crisp dark gray/black on paper */
+  *,
+  .text-white,
+  .text-slate-100,
+  .text-slate-200,
+  .text-slate-300 {
+    color: #0f172a !important;
+    text-shadow: none !important;
+  }
+
+  .text-slate-400,
+  .text-slate-500 {
+    color: #475569 !important;
+  }
+
+  .text-emerald-300,
+  .text-emerald-400 {
+    color: #047857 !important;
+    font-weight: 600 !important;
+  }
+
+  .text-teal-300,
+  .text-teal-400 {
+    color: #0f766e !important;
+  }
+
+  .text-sky-300,
+  .text-sky-400 {
+    color: #0369a1 !important;
+  }
+
+  .text-amber-300,
+  .text-amber-400 {
+    color: #b45309 !important;
+  }
+
+  /* Convert dark backgrounds on badges and cards to clean white/light gray */
+  .bg-slate-900,
+  .bg-slate-900\/90,
+  .bg-slate-950,
+  .bg-slate-950\/80,
+  .bg-slate-950\/60,
+  .bg-slate-800 {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  /* Prevent page breaks inside cards */
+  .rounded-xl,
+  .rounded-2xl {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+}

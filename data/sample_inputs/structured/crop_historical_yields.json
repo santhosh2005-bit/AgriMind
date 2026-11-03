@@ -1,0 +1,5 @@
+[
+  {"parcel_id": "P-101", "crop_cultivated": "Tomato", "soil_ph": 7.8, "ec_ds_m": 2.4, "yield_tons_ha": 22.4, "harvest_year": 2023},
+  {"parcel_id": "P-102", "crop_cultivated": "Chilli", "soil_ph": 7.2, "ec_ds_m": 1.2, "yield_tons_ha": 14.8, "harvest_year": 2023},
+  {"parcel_id": "P-103", "crop_cultivated": "Wheat", "soil_ph": 6.8, "ec_ds_m": 0.8, "yield_tons_ha": 5.2, "harvest_year": 2024}
+]

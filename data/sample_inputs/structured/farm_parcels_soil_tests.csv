@@ -1,0 +1,6 @@
+parcel_id,farm_name,crop_cultivated,soil_ph,organic_carbon_pct,nitrogen_kg_ha,phosphorus_kg_ha,potassium_kg_ha,ec_ds_m,soil_texture,last_tested_date
+P-101,Krishna Valley Farm,Tomato,7.8,0.45,180.0,18.5,240.0,2.4,Sandy Loam,2024-08-15
+P-102,Krishna Valley Farm,Chilli,7.2,0.65,220.0,24.0,280.0,1.2,Clay Loam,2024-08-15
+P-103,Godavari Agri Estate,Wheat,6.8,0.80,260.0,32.0,310.0,0.8,Silt Loam,2024-09-01
+P-104,Godavari Agri Estate,Cotton,8.1,0.38,160.0,14.0,210.0,2.8,Black Cotton Clay,2024-09-05
+P-105,Sahyadri Organic Orchard,Grape,6.5,1.10,290.0,38.0,350.0,0.6,Loamy Sand,2024-09-20

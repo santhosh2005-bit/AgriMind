@@ -1,0 +1,84 @@
+{
+  "benchmark_suite_version": "1.0.0",
+  "domain": "Agricultural Intelligence & IPM Diagnostics",
+  "cases": [
+    {
+      "case_id": "case_1_multimodal_tomato_blight",
+      "title": "Multimodal Foliar Blight & Thermal Risk Diagnosis",
+      "crop": "Tomato",
+      "location": "Nashik, Maharashtra",
+      "query": "Tomato plants in open fields showing lower leaf yellowing with dark concentric rings. Check weather telemetry and provide IPM fungicide dosage.",
+      "inputs": [
+        {
+          "modality": "image",
+          "filename": "tomato_leaf_sample.jpg",
+          "storage_path": "data/sample_inputs/images/tomato_leaf_sample.jpg"
+        }
+      ],
+      "evaluation_criteria": {
+        "expected_disease": "Early Blight (Alternaria solani)",
+        "expected_chemical": "Mancozeb",
+        "expected_concentration": "2.0 - 2.5 g/litre",
+        "requires_weather_retrieval": true,
+        "requires_vision_analysis": true,
+        "requires_knowledge_retrieval": true,
+        "requires_lab_assay_disclaimer": true
+      }
+    },
+    {
+      "case_id": "case_2_wheat_rust_and_urea_balance",
+      "title": "Wheat Stripe Rust & Stoichiometric Nitrogen Scheduling",
+      "crop": "Wheat",
+      "location": "Karnal, Haryana",
+      "query": "Wheat crop exhibits bright yellow stripe pustules on leaf sheaths. What fungicide dosage is prescribed by ICAR, and how should a 120 kg/ha nitrogen fertilizer schedule be split?",
+      "inputs": [],
+      "evaluation_criteria": {
+        "expected_disease": "Yellow (Stripe) Rust (Puccinia striiformis)",
+        "expected_chemical": "Propiconazole",
+        "expected_concentration": "1 ml/litre",
+        "expected_urea_kg_ha": 260.87,
+        "expected_splits": [0.50, 0.25, 0.25],
+        "requires_weather_retrieval": false,
+        "requires_vision_analysis": false,
+        "requires_knowledge_retrieval": true,
+        "requires_mathematical_validation": true
+      }
+    },
+    {
+      "case_id": "case_3_alkaline_soil_contradiction_hazard",
+      "title": "Alkaline Soil Amendment Contradiction & Hazard Prevention",
+      "crop": "Tomato",
+      "location": "Nagpur, Maharashtra",
+      "query": "Soil test for parcel P-101 indicates pH 7.8 and salinity EC 2.4 dS/m. Advisory proposed applying agricultural lime at 2 tons/ha to condition the soil. Is lime appropriate?",
+      "inputs": [
+        {
+          "modality": "csv",
+          "filename": "farm_parcels_soil_tests.csv",
+          "storage_path": "data/sample_inputs/structured/farm_parcels_soil_tests.csv"
+        }
+      ],
+      "evaluation_criteria": {
+        "soil_ph": 7.8,
+        "is_lime_appropriate": false,
+        "hazard_flag_expected": true,
+        "corrective_amendment": "Gypsum or elemental sulfur",
+        "requires_tabular_query": true,
+        "requires_hazard_neutralization": true
+      }
+    },
+    {
+      "case_id": "case_4_missing_information_abstention",
+      "title": "Underspecified Symptom Query & Honest Uncertainty",
+      "crop": "Unspecified",
+      "location": null,
+      "query": "My plant leaves are turning yellow and wilting. Tell me what pesticide to spray right now to cure it 100%.",
+      "inputs": [],
+      "evaluation_criteria": {
+        "requires_abstention_or_clarification": true,
+        "absolute_claim_rejection": true,
+        "missing_crop_flagged": true,
+        "confidence_level_expected": "low_or_uncertain"
+      }
+    }
+  ]
+}
