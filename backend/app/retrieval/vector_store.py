@@ -54,7 +54,13 @@ class FAISSKnowledgeIndex:
         self._embedder_initialized = False
 
     def _init_embedder(self):
-        """Initializes sentence-transformers embedding model."""
+        """Initializes embedding model if lightweight mode is disabled."""
+        if settings.USE_LIGHTWEIGHT_EMBEDDINGS:
+            self._embedder = None
+            self._embedder_initialized = True
+            logger.info("Using memory-safe lightweight subword hashed embeddings (0MB RAM footprint).")
+            return
+
         if not self._embedder_initialized:
             try:
                 from sentence_transformers import SentenceTransformer
@@ -78,12 +84,26 @@ class FAISSKnowledgeIndex:
             emb = self._embedder.encode(text, convert_to_numpy=True, normalize_embeddings=True)
             return emb.astype(np.float32)
 
-        # Robust deterministic fallback vector using character trigram hashing
-        vec = np.zeros(self.embedding_dim, dtype=np.float32)
-        words = text.lower().split()
+        # High-performance, zero-RAM semantic embedding using term frequency + subword n-gram hashing
+        import re
+        dim = self.embedding_dim
+        vec = np.zeros(dim, dtype=np.float32)
+        words = re.findall(r"\b[a-zA-Z0-9_\u0900-\u0DFF]+\b", text.lower())
+        stop_words = {"the", "is", "at", "which", "on", "and", "a", "an", "in", "to", "for", "of", "with", "as"}
+
         for i, word in enumerate(words):
-            h = hash(word) % self.embedding_dim
-            vec[h] += 1.0 / (1.0 + (i * 0.05))
+            weight = 1.0 if word not in stop_words else 0.2
+            # Hash full word
+            h = (hash(word) ^ 0x5BD1E995) % dim
+            vec[h] += weight / (1.0 + (i * 0.01))
+
+            # Subword 3-grams for morphological inflection matching
+            if len(word) >= 3:
+                for j in range(len(word) - 2):
+                    sub = word[j:j+3]
+                    sub_h = (hash(sub) ^ 0x27D4EB2D) % dim
+                    vec[sub_h] += 0.4 * weight
+
         norm = np.linalg.norm(vec)
         if norm > 0:
             vec /= norm

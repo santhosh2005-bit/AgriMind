@@ -44,6 +44,10 @@ class Settings(BaseSettings):
 
     # Vector Embedding Configuration
     EMBEDDING_MODEL_NAME: str = Field(default="all-MiniLM-L6-v2")
+    USE_LIGHTWEIGHT_EMBEDDINGS: bool = Field(
+        default=True,
+        description="Use zero-memory hashed subword embeddings to prevent Render 512MB RAM OOM crashes"
+    )
 
     # Execution Safeguards & Budgets
     MAX_PLAN_STEPS: int = Field(default=10, ge=1, le=25)
