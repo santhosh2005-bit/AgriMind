@@ -283,7 +283,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
             {/* Photograph display with zoom */}
             <div className="relative group rounded-lg overflow-hidden border border-slate-800 bg-slate-950 aspect-video md:aspect-square flex items-center justify-center">
               <img
-                src={currentImage.previewUrl}
+                src={currentImage?.previewUrl || 'https://images.unsplash.com/photo-1592417817098-8f3d69109853?auto=format&fit=crop&w=600&q=80'}
                 alt="Symptomatic crop foliage inspection"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
                 onClick={() => setIsImageZoomed(!isImageZoomed)}
@@ -294,7 +294,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               />
               <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-slate-300 flex items-center gap-1">
                 <Eye className="w-3 h-3 text-emerald-400" />
-                <span className="truncate max-w-[150px]">{currentImage.filename}</span>
+                <span className="truncate max-w-[150px]">{currentImage?.filename || 'crop_image.jpg'}</span>
               </div>
             </div>
 
@@ -308,12 +308,12 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-slate-400">Green Canopy Foliage:</span>
-                  <span className="font-mono font-bold text-emerald-400">{currentImage.canopy}%</span>
+                  <span className="font-mono font-bold text-emerald-400">{currentImage?.canopy ?? 0}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${currentImage.canopy}%` }}
+                    style={{ width: `${currentImage?.canopy ?? 0}%` }}
                   />
                 </div>
               </div>
@@ -322,12 +322,12 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-slate-400">Yellow Chlorosis Severity Ratio:</span>
-                  <span className="font-mono font-bold text-amber-400">{currentImage.chlorosis}% (Moderate)</span>
+                  <span className="font-mono font-bold text-amber-400">{currentImage?.chlorosis ?? 0}% (Moderate)</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                   <div
                     className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                    style={{ width: `${currentImage.chlorosis}%` }}
+                    style={{ width: `${currentImage?.chlorosis ?? 0}%` }}
                   />
                 </div>
               </div>
@@ -336,18 +336,18 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <div className="p-2 rounded-lg bg-slate-950 border border-slate-800/80 text-[11px]">
                   <span className="text-slate-500 block">Laplacian Focus Score:</span>
-                  <span className="font-mono font-bold text-teal-300">{currentImage.blur} (High Sharpness)</span>
+                  <span className="font-mono font-bold text-teal-300">{currentImage?.blur ?? 0} (High Sharpness)</span>
                 </div>
                 <div className="p-2 rounded-lg bg-slate-950 border border-slate-800/80 text-[11px]">
                   <span className="text-slate-500 block">Lesion Localization:</span>
                   <span className="font-semibold text-rose-300">
-                    {currentImage.lesions.length > 0 ? `${currentImage.lesions.length} Infection Foci Identified` : 'Concentric Rings (Blight)'}
+                    {(currentImage?.lesions?.length || 0) > 0 ? `${currentImage.lesions.length} Infection Foci Identified` : 'Concentric Rings (Blight)'}
                   </span>
                 </div>
               </div>
 
               {/* Exact Lesion & Spoil Localization Breakdown */}
-              {currentImage.lesions.length > 0 && (
+              {(currentImage?.lesions?.length || 0) > 0 && (
                 <div className="pt-1 space-y-1.5">
                   <div className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
                     <span>Localized Disease / Spoil Foci ({currentImage.lesions.length} Zones):</span>
@@ -379,7 +379,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               )}
 
               <p className="text-[11px] text-slate-300 italic bg-slate-950/60 p-2 rounded-lg border border-slate-800/60">
-                Visual Finding: {currentImage.findings || 'Foliar image processed by Computer Vision.'}
+                Visual Finding: {currentImage?.findings || 'Foliar image processed by Computer Vision.'}
               </p>
             </div>
           </div>
