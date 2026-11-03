@@ -136,7 +136,6 @@ def request_understanding_node(state: AgriMindState) -> AgriMindState:
 
     # 2. Domain Classification
     domain_category = classify_domain(query_lower, detected_indic=lang_det.is_indic)
-    # Default to AGRICULTURE if location is given or image is uploaded and it's not coding or math
     if domain_category == DomainCategory.GENERAL_KNOWLEDGE and (state.request.location or InputModality.IMAGE in state.detected_modalities):
         domain_category = DomainCategory.AGRICULTURE
 

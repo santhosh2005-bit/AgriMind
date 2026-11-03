@@ -78,7 +78,14 @@ export function App() {
 
   useEffect(() => {
     checkHealth();
-  }, []);
+    // Auto-poll every 8 seconds if server was asleep / offline
+    const interval = setInterval(() => {
+      if (!health) {
+        checkHealth();
+      }
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [health]);
 
   const handleRunWorkflow = async (sub: WorkspaceSubmission) => {
     setIsExecuting(true);

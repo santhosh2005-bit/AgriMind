@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     APP_HOST: str = Field(default="127.0.0.1", description="FastAPI host binding")
     APP_PORT: int = Field(default=8000, description="FastAPI port binding")
     CORS_ORIGINS: str = Field(
-        default="http://localhost:5173,http://127.0.0.1:5173",
-        description="Comma-separated allowed CORS origins"
+        default="*",
+        description="Comma-separated allowed CORS origins or '*' for wildcard"
     )
 
     # Persistence & File Storage
@@ -60,6 +60,8 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> List[str]:
+        if not self.CORS_ORIGINS or self.CORS_ORIGINS.strip() == "*":
+            return ["*"]
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
     def ensure_directories(self) -> None:

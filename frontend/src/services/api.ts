@@ -5,7 +5,8 @@ import type {
   ExecutionTraceView,
 } from '../types/api';
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api` : '/api';
+const rawBase = import.meta.env.VITE_API_BASE_URL ? (import.meta.env.VITE_API_BASE_URL as string).replace(/\/+$/, '') : '';
+export const API_BASE = rawBase ? `${rawBase}/api` : '/api';
 
 export interface WorkflowRunRequestPayload {
   text_query: string;
@@ -33,29 +34,43 @@ export async function fetchHealth(): Promise<SystemHealth> {
 }
 
 export async function previewExecutionPlan(payload: WorkflowRunRequestPayload): Promise<ExecutionPlan> {
-  const res = await fetch(`${API_BASE}/v1/workflow/plan`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || 'Plan formulation failed');
+  try {
+    const res = await fetch(`${API_BASE}/v1/workflow/plan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Plan formulation failed');
+    }
+    return res.json();
+  } catch (err: any) {
+    if (err.message && err.message.includes('Failed to fetch')) {
+      throw new Error('AgriMind backend is waking up or unreachable. Free-tier cloud instances take ~30-50s on the first request. Please retry in a moment.');
+    }
+    throw err;
   }
-  return res.json();
 }
 
 export async function executeWorkflow(payload: WorkflowRunRequestPayload): Promise<any> {
-  const res = await fetch(`${API_BASE}/v1/workflow/run`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || 'Workflow execution failed');
+  try {
+    const res = await fetch(`${API_BASE}/v1/workflow/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Workflow execution failed');
+    }
+    return res.json();
+  } catch (err: any) {
+    if (err.message && err.message.includes('Failed to fetch')) {
+      throw new Error('AgriMind backend is waking up or unreachable. Free-tier cloud instances take ~30-50s on the first request. Please wait 30 seconds and retry.');
+    }
+    throw err;
   }
-  return res.json();
 }
 
 export async function uploadMultimodalFile(file: File): Promise<{
