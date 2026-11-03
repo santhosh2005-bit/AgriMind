@@ -21,6 +21,7 @@ EXPANDED_CROP_LEXICON: Dict[str, str] = {
     "tomato": "tomato", "thakkali": "tomato", "tamatar": "tomato",
     "potato": "potato", "aloo": "potato", "urulaikizhangu": "potato", "bangaladumpa": "potato",
     "onion": "onion", "pyaz": "onion", "vengayam": "onion", "ullipaya": "onion",
+    "carrot": "carrot", "gajar": "carrot", "கேரட்": "carrot", "gajjara": "carrot",
     "chilli": "chilli", "chili": "chilli", "pepper": "chilli", "mirch": "chilli", "mirchi": "chilli", "milagai": "chilli",
     "brinjal": "eggplant", "eggplant": "eggplant", "baingan": "eggplant", "kathirikai": "eggplant", "vankaya": "eggplant",
     "cabbage": "cabbage", "patta gobhi": "cabbage", "cauliflower": "cauliflower", "phool gobhi": "cauliflower",
@@ -53,12 +54,14 @@ EXPANDED_CROP_LEXICON: Dict[str, str] = {
 
 def classify_domain(query_lower: str, detected_indic: bool) -> DomainCategory:
     """Classifies user inquiry into functional domain categories."""
-    # 1. Agriculture (Priority domain: crops, soil, pests, fertilizers, irrigation, symptoms)
+    # 1. Agriculture (Priority domain: crops, soil, pests, fertilizers, irrigation, symptoms, farms, gardens)
     agri_patterns = [
-        r"\b(crop|soil|fertilizer|fertiliser|urea|dap|npk|pesticide|fungicide|herbicide|weed|blight|rust|rot|wilt)\b",
-        r"\b(irrigation|harvest|sowing|yield|pruning|grafting|pest|infestation|chlorosis|leaf curl|ph |salinity|yellow leaves|leaves)\b",
-        r"\b(விவசாயம்|பயிர்|விதை|உரம்|மருந்து|நோய்|பூச்சி|பாசனம்|தோட்டம்)\b",
-        r"\b(कृषि|फसल|खाद|उर्वरक|कीट|रोग|छिड़काव|सिंचाई|मिट्टी|खेत)\b",
+        r"\b(crop|crops|farm|farms|farmer|farmers|farming|field|fields|orchard|plantation|plot|acre|acres|hectare|parcel)\b",
+        r"\b(soil|soils|fertilizer|fertiliser|urea|dap|npk|pesticide|fungicide|herbicide|weed|blight|rust|rot|wilt)\b",
+        r"\b(irrigation|harvest|sowing|yield|pruning|grafting|pest|infestation|chlorosis|leaf curl|ph |salinity|yellow leaves|leaves|plant|plants)\b",
+        r"\b(carrot|carrots|tomato|tomatoes|potato|potatoes|onion|onions|vegetable|vegetables|pulse|pulses|grain|grains)\b",
+        r"(விவசாயம்|பயிர்|விதை|உரம்|மருந்து|நோய்|பூச்சி|பாசனம்|தோட்டம்|பண்ணை|விவசாயி|கேரட்)",
+        r"(कृषि|फसल|खाद|उर्वरक|कीट|रोग|छिड़काव|सिंचाई|मिट्टी|खेत|किसान|गाजर)",
     ]
     has_agri_keyword = any(re.search(pat, query_lower) for pat in agri_patterns)
     has_crop_mention = any(crop_token in query_lower for crop_token in EXPANDED_CROP_LEXICON)
@@ -133,6 +136,9 @@ def request_understanding_node(state: AgriMindState) -> AgriMindState:
 
     # 2. Domain Classification
     domain_category = classify_domain(query_lower, detected_indic=lang_det.is_indic)
+    # Default to AGRICULTURE if location is given or image is uploaded and it's not coding or math
+    if domain_category == DomainCategory.GENERAL_KNOWLEDGE and (state.request.location or InputModality.IMAGE in state.detected_modalities):
+        domain_category = DomainCategory.AGRICULTURE
 
     # 3. Detect crop mentions (for agricultural inquiries)
     detected_crops = []
