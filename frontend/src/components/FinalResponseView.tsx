@@ -131,28 +131,60 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
   const langKey = (response.language || 'en').toLowerCase();
   const displayLang = LANGUAGE_LABELS[langKey] || response.language || 'English';
 
-  // Check if an image was analyzed in this run
-  const imageEvidence = response.retrieved_evidence?.find(
-    (ev) => ev.source_type === 'image_inspection'
-  );
-  const uploadedImageFile = uploadedFiles?.find(
-    (f) => f.metadata?.modality === 'image' || f.metadata?.filename?.toLowerCase().endsWith('.jpg') || f.metadata?.filename?.toLowerCase().endsWith('.png')
-  );
+  const [activeImageIdx, setActiveImageIdx] = useState<number>(0);
 
-  const shouldShowImageCard = Boolean(uploadedImageFile || (imageEvidence && imageEvidence.metadata?.canopy_coverage_pct !== undefined));
-  const imagePreviewUrl =
-    (uploadedImageFile?.processing_summary as any)?.annotated_preview_base64 ||
-    (imageEvidence?.metadata as any)?.annotated_preview_base64 ||
-    uploadedImageFile?.processing_summary?.preview_url ||
-    (uploadedImageFile?.metadata?.filename ? `/uploads/${uploadedImageFile.metadata.filename}` : '');
-  const detectedLesions: Array<any> =
-    (uploadedImageFile?.processing_summary as any)?.detected_lesions ||
-    (imageEvidence?.metadata as any)?.detected_lesions ||
-    [];
-  const greenCanopyPct = uploadedImageFile?.processing_summary?.color_metrics?.green_canopy_pct ?? (imageEvidence?.metadata?.canopy_coverage_pct as number ?? 0);
-  const chlorosisPct = uploadedImageFile?.processing_summary?.color_metrics?.yellow_chlorosis_pct ?? (imageEvidence?.metadata?.chlorosis_severity_pct as number ?? 0);
-  const blurScore = uploadedImageFile?.processing_summary?.laplacian_blur_score ?? (imageEvidence?.metadata?.laplacian_blur_score as number ?? 0);
-  const imageFindingsText = (imageEvidence?.metadata?.visual_findings as string) || (uploadedImageFile?.metadata?.extracted_summary as string) || '';
+  // Check all image attachments and evidences analyzed in this run
+  const allImageEvidences = response.retrieved_evidence?.filter(
+    (ev) => ev.source_type === 'image_inspection'
+  ) || [];
+
+  const allUploadedImageFiles = uploadedFiles?.filter(
+    (f) => f.metadata?.modality === 'image' || f.metadata?.filename?.toLowerCase().endsWith('.jpg') || f.metadata?.filename?.toLowerCase().endsWith('.png')
+  ) || [];
+
+  // Construct a unified list of analyzed images
+  const analyzedImages = allUploadedImageFiles.length > 0
+    ? allUploadedImageFiles.map((file, idx) => {
+        const ev = allImageEvidences[idx];
+        const previewUrl =
+          (file.processing_summary as any)?.annotated_preview_base64 ||
+          (ev?.metadata as any)?.annotated_preview_base64 ||
+          file.processing_summary?.preview_url ||
+          (file.metadata?.filename ? `/uploads/${file.metadata.filename}` : '');
+        const lesions: Array<any> =
+          (file.processing_summary as any)?.detected_lesions ||
+          (ev?.metadata as any)?.detected_lesions ||
+          [];
+        const canopy = file.processing_summary?.color_metrics?.green_canopy_pct ?? ((ev?.metadata as any)?.canopy_coverage_pct as number ?? 0);
+        const chlorosis = file.processing_summary?.color_metrics?.yellow_chlorosis_pct ?? ((ev?.metadata as any)?.chlorosis_severity_pct as number ?? 0);
+        const blur = file.processing_summary?.laplacian_blur_score ?? ((ev?.metadata as any)?.laplacian_blur_score as number ?? 0);
+        const findings = ((ev?.metadata as any)?.visual_findings as string) || (file.metadata?.extracted_summary as string) || '';
+
+        return {
+          filename: file.metadata?.filename || `Image_${idx + 1}.jpg`,
+          previewUrl,
+          canopy,
+          chlorosis,
+          blur,
+          findings,
+          lesions,
+        };
+      })
+    : allImageEvidences.map((ev, idx) => {
+        const meta = (ev.metadata || {}) as any;
+        return {
+          filename: ev.source_name || `Image_${idx + 1}.jpg`,
+          previewUrl: meta.annotated_preview_base64 || '',
+          canopy: meta.canopy_coverage_pct ?? 0,
+          chlorosis: meta.chlorosis_severity_pct ?? 0,
+          blur: meta.laplacian_blur_score ?? 0,
+          findings: meta.visual_findings || ev.content_snippet || '',
+          lesions: meta.detected_lesions || [],
+        };
+      });
+
+  const shouldShowImageCard = analyzedImages.length > 0;
+  const currentImage = analyzedImages[activeImageIdx] || analyzedImages[0];
 
   return (
     <div className="glass-panel-glow rounded-2xl p-6 border border-emerald-500/30 shadow-2xl space-y-6">
@@ -212,15 +244,36 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
       )}
 
       {/* 2. Uploaded Crop Photograph & Visual Foliar Inspection Card */}
-      {shouldShowImageCard && (
+      {shouldShowImageCard && currentImage && (
         <div className="p-4 rounded-xl bg-slate-900/90 border border-emerald-500/40 space-y-3 shadow-lg">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-emerald-400" />
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                Uploaded Crop Photograph & Computer Vision Inspection
+                Crop Inspection & Lesion Localization ({analyzedImages.length} Image{analyzedImages.length > 1 ? 's' : ''})
               </h4>
             </div>
+            
+            {/* Multi-Image Selector Tabs */}
+            {analyzedImages.length > 1 && (
+              <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                {analyzedImages.map((_img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveImageIdx(idx)}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition ${
+                      activeImageIdx === idx
+                        ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    Image {idx + 1}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-mono">
               OpenCV Color & Texture Preprocessor
             </span>
@@ -230,7 +283,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
             {/* Photograph display with zoom */}
             <div className="relative group rounded-lg overflow-hidden border border-slate-800 bg-slate-950 aspect-video md:aspect-square flex items-center justify-center">
               <img
-                src={imagePreviewUrl}
+                src={currentImage.previewUrl}
                 alt="Symptomatic crop foliage inspection"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
                 onClick={() => setIsImageZoomed(!isImageZoomed)}
@@ -241,7 +294,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               />
               <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-slate-300 flex items-center gap-1">
                 <Eye className="w-3 h-3 text-emerald-400" />
-                <span>{uploadedImageFile?.metadata?.filename || 'tomato_leaf_sample.jpg'}</span>
+                <span className="truncate max-w-[150px]">{currentImage.filename}</span>
               </div>
             </div>
 
@@ -255,12 +308,12 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-slate-400">Green Canopy Foliage:</span>
-                  <span className="font-mono font-bold text-emerald-400">{greenCanopyPct}%</span>
+                  <span className="font-mono font-bold text-emerald-400">{currentImage.canopy}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${greenCanopyPct}%` }}
+                    style={{ width: `${currentImage.canopy}%` }}
                   />
                 </div>
               </div>
@@ -269,12 +322,12 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-slate-400">Yellow Chlorosis Severity Ratio:</span>
-                  <span className="font-mono font-bold text-amber-400">{chlorosisPct}% (Moderate)</span>
+                  <span className="font-mono font-bold text-amber-400">{currentImage.chlorosis}% (Moderate)</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                   <div
                     className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                    style={{ width: `${chlorosisPct}%` }}
+                    style={{ width: `${currentImage.chlorosis}%` }}
                   />
                 </div>
               </div>
@@ -283,25 +336,25 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <div className="p-2 rounded-lg bg-slate-950 border border-slate-800/80 text-[11px]">
                   <span className="text-slate-500 block">Laplacian Focus Score:</span>
-                  <span className="font-mono font-bold text-teal-300">{blurScore} (High Sharpness)</span>
+                  <span className="font-mono font-bold text-teal-300">{currentImage.blur} (High Sharpness)</span>
                 </div>
                 <div className="p-2 rounded-lg bg-slate-950 border border-slate-800/80 text-[11px]">
                   <span className="text-slate-500 block">Lesion Localization:</span>
                   <span className="font-semibold text-rose-300">
-                    {detectedLesions.length > 0 ? `${detectedLesions.length} Infection Foci Identified` : 'Concentric Rings (Blight)'}
+                    {currentImage.lesions.length > 0 ? `${currentImage.lesions.length} Infection Foci Identified` : 'Concentric Rings (Blight)'}
                   </span>
                 </div>
               </div>
 
               {/* Exact Lesion & Spoil Localization Breakdown */}
-              {detectedLesions.length > 0 && (
+              {currentImage.lesions.length > 0 && (
                 <div className="pt-1 space-y-1.5">
                   <div className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
-                    <span>Localized Disease / Spoil Foci ({detectedLesions.length} Zones):</span>
+                    <span>Localized Disease / Spoil Foci ({currentImage.lesions.length} Zones):</span>
                     <span className="text-[10px] text-emerald-400 font-mono">OpenCV Contour Bounding Box</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
-                    {detectedLesions.map((zone: any, zIdx: number) => (
+                    {currentImage.lesions.map((zone: any, zIdx: number) => (
                       <div
                         key={zIdx}
                         className="p-1.5 rounded-md bg-slate-950/80 border border-slate-800 flex items-center justify-between text-[10px]"
@@ -326,7 +379,7 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
               )}
 
               <p className="text-[11px] text-slate-300 italic bg-slate-950/60 p-2 rounded-lg border border-slate-800/60">
-                Visual Finding: {imageFindingsText || 'Foliar image processed by Computer Vision.'}
+                Visual Finding: {currentImage.findings || 'Foliar image processed by Computer Vision.'}
               </p>
             </div>
           </div>

@@ -50,10 +50,11 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
     if step.task_type == TaskType.VISION_ANALYSIS:
         crop = state.request_understanding.get("primary_crop", "Crop")
         img_findings = []
-        img_metadata = {}
+        all_evidences = []
+        last_metadata = {}
+
         for inp in state.request.inputs:
             if inp.modality == InputModality.IMAGE:
-                # Try to load and process actual image from storage path if available
                 from backend.app.processing.image_processor import default_image_processor
                 proc_res = None
                 if inp.storage_path and os.path.exists(inp.storage_path):
@@ -70,7 +71,7 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                 lesions_dict = [l.model_dump() for l in proc_res.detected_lesions] if proc_res else []
                 annotated_b64 = proc_res.annotated_preview_base64 if proc_res else None
 
-                img_metadata = {
+                single_metadata = {
                     "filename": inp.filename or "uploaded_image.jpg",
                     "summary": inp.extracted_summary or notes_str,
                     "canopy_coverage_pct": canopy,
@@ -80,17 +81,30 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                     "detected_lesions": lesions_dict,
                     "annotated_preview_base64": annotated_b64,
                 }
-                img_findings.append(
+                last_metadata = single_metadata
+
+                finding_text = (
                     f"Visual Foliar Telemetry for '{inp.filename}': "
                     f"Canopy coverage: {canopy}%, Chlorosis severity: {chlorosis}%, "
                     f"Clarity score: {blur_score}. {notes_str}"
                 )
+                img_findings.append(finding_text)
+
+                ev = RetrievedEvidence(
+                    source_type="image_inspection",
+                    source_name=inp.filename or "Uploaded Foliar Photograph",
+                    location_reference="Computer Vision Preprocessing",
+                    content_snippet=finding_text,
+                    relevance_score=0.95,
+                    metadata=single_metadata,
+                )
+                all_evidences.append(ev)
 
         if not img_findings:
             img_findings.append(
                 f"Visual foliar inspection for {crop}: No image attachment provided."
             )
-            img_metadata = {
+            last_metadata = {
                 "filename": "no_image_attached",
                 "summary": "No image uploaded",
                 "canopy_coverage_pct": 0.0,
@@ -98,24 +112,25 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                 "laplacian_blur_score": 0.0,
                 "visual_findings": "No image was provided for foliar analysis.",
             }
+            ev = RetrievedEvidence(
+                source_type="image_inspection",
+                source_name="no_image_attached",
+                location_reference="Computer Vision Preprocessing",
+                content_snippet=img_findings[0],
+                relevance_score=0.95,
+                metadata=last_metadata,
+            )
+            all_evidences.append(ev)
 
-        evidence = RetrievedEvidence(
-            source_type="image_inspection",
-            source_name=img_metadata.get("filename", "Uploaded Foliar Photograph"),
-            location_reference="Computer Vision Preprocessing",
-            content_snippet=img_findings[0],
-            relevance_score=0.95,
-            metadata=img_metadata,
-        )
-        state.retrieved_evidence.append(evidence)
-        state.intermediate_results[step.step_id] = img_findings[0]
+        state.retrieved_evidence.extend(all_evidences)
+        state.intermediate_results[step.step_id] = "\n".join(img_findings)
 
         tool_res = ToolResult(
             invocation_id=f"inv-vision-{int(time.time())}",
             tool_name="vision_processor",
             status=ToolStatus.SUCCESS,
-            structured_data=img_metadata,
-            evidence_items=[evidence],
+            structured_data=last_metadata,
+            evidence_items=all_evidences,
         )
         state.tool_results[step.step_id] = tool_res
         state.step_statuses[step.step_id] = StepStatus.COMPLETED
