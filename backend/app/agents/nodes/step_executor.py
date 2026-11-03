@@ -67,6 +67,8 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                 chlorosis = proc_res.color_metrics.yellow_chlorosis_pct if proc_res else 0.0
                 blur_score = proc_res.laplacian_blur_score if proc_res else 0.0
                 notes_str = "; ".join(proc_res.diagnostic_notes) if proc_res and proc_res.diagnostic_notes else "Foliar image processed."
+                lesions_dict = [l.model_dump() for l in proc_res.detected_lesions] if proc_res else []
+                annotated_b64 = proc_res.annotated_preview_base64 if proc_res else None
 
                 img_metadata = {
                     "filename": inp.filename or "uploaded_image.jpg",
@@ -75,6 +77,8 @@ def step_executor_node(state: AgriMindState) -> AgriMindState:
                     "chlorosis_severity_pct": chlorosis,
                     "laplacian_blur_score": blur_score,
                     "visual_findings": notes_str,
+                    "detected_lesions": lesions_dict,
+                    "annotated_preview_base64": annotated_b64,
                 }
                 img_findings.append(
                     f"Visual Foliar Telemetry for '{inp.filename}': "

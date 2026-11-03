@@ -24,6 +24,15 @@ class ImageColorMetrics(BaseModel):
     chlorosis_severity_ratio: float = Field(..., description="Ratio of yellow chlorosis to green foliage")
 
 
+class DetectedLesionZone(BaseModel):
+    zone_id: str
+    box: Tuple[int, int, int, int] = Field(..., description="(x, y, width, height) in pixels")
+    relative_box: Tuple[float, float, float, float] = Field(..., description="(x%, y%, w%, h%) relative coords")
+    area_pct: float
+    lesion_type: str = Field(..., description="E.g., Chlorotic Halo, Necrotic Blight Lesion")
+    severity: str = Field(..., description="Mild, Moderate, Severe")
+
+
 class ProcessedImageResult(BaseModel):
     filename: str
     format: str
@@ -36,6 +45,8 @@ class ProcessedImageResult(BaseModel):
     laplacian_blur_score: float
     color_metrics: ImageColorMetrics
     diagnostic_notes: List[str] = Field(default_factory=list)
+    detected_lesions: List[DetectedLesionZone] = Field(default_factory=list)
+    annotated_preview_base64: Optional[str] = None
     untrusted_sanitized: bool = True
     caveat: str = (
         "Visual processing extracts empirical color and texture properties. "
@@ -116,6 +127,80 @@ class ImageProcessor:
         brown_pixels = float(cv2.countNonZero(brown_mask))
         brown_pct = round((brown_pixels / total_pixels) * 100.0, 1)
 
+        # 3. Contour & Lesion Localization (Detect exact diseased patches)
+        detected_lesions: List[DetectedLesionZone] = []
+        annotated_cv = cv_img.copy()
+
+        # Combine diseased masks (yellow chlorosis + brown necrotic lesions)
+        combined_disease_mask = cv2.bitwise_or(yellow_mask, brown_mask)
+        # Apply morphological operations to smooth noise
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        cleaned_mask = cv2.morphologyEx(combined_disease_mask, cv2.MORPH_OPEN, kernel)
+        cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_CLOSE, kernel)
+
+        contours, _ = cv2.findContours(cleaned_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Filter contours by minimum area (at least 0.5% of total image area)
+        min_contour_area = total_pixels * 0.005
+        sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)[:6]
+
+        for idx, cnt in enumerate(sorted_contours):
+            area = cv2.contourArea(cnt)
+            if area < min_contour_area:
+                continue
+
+            x, y, w, h = cv2.boundingRect(cnt)
+            cnt_area_pct = round((area / total_pixels) * 100.0, 2)
+
+            # Determine dominant symptom in this specific bounding box
+            roi_brown = brown_mask[y:y+h, x:x+w]
+            roi_yellow = yellow_mask[y:y+h, x:x+w]
+            brown_count = cv2.countNonZero(roi_brown)
+            yellow_count = cv2.countNonZero(roi_yellow)
+
+            if brown_count > yellow_count * 0.8:
+                lesion_type = "Necrotic Blight Lesion (Target-Board Spoil)"
+                box_color = (0, 0, 235)  # Crimson Red in BGR
+                severity = "Severe" if cnt_area_pct > 3.0 else "Moderate"
+            else:
+                lesion_type = "Chlorotic Foliar Halo / Yellowing"
+                box_color = (0, 215, 255)  # Amber Yellow in BGR
+                severity = "Moderate" if cnt_area_pct > 2.0 else "Mild"
+
+            # Draw glowing bounding box and label tag on annotated preview
+            cv2.rectangle(annotated_cv, (x, y), (x + w, y + h), box_color, 2)
+            label_text = f"#{idx+1} {lesion_type.split()[0]} ({cnt_area_pct}%)"
+            cv2.putText(
+                annotated_cv,
+                label_text,
+                (x, max(15, y - 6)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.45,
+                box_color,
+                1,
+                cv2.LINE_AA,
+            )
+
+            detected_lesions.append(
+                DetectedLesionZone(
+                    zone_id=f"zone-{idx+1}",
+                    box=(x, y, w, h),
+                    relative_box=(
+                        round((x / width) * 100, 1),
+                        round((y / height) * 100, 1),
+                        round((w / width) * 100, 1),
+                        round((h / height) * 100, 1),
+                    ),
+                    area_pct=cnt_area_pct,
+                    lesion_type=lesion_type,
+                    severity=severity,
+                )
+            )
+
+        # Encode annotated preview to base64 for direct UI display
+        import base64
+        _, buffer = cv2.imencode(".jpg", annotated_cv)
+        annotated_preview_base64 = f"data:image/jpeg;base64,{base64.b64encode(buffer).decode('utf-8')}"
+
         # Chlorosis severity ratio
         chlorosis_ratio = round(yellow_pct / max(1.0, green_pct), 3)
 
@@ -131,6 +216,8 @@ class ImageProcessor:
             notes.append(f"Elevated yellow foliar pigmentation detected ({yellow_pct}% of area), indicating interveinal chlorosis or leaf senescence.")
         if brown_pct > 8.0:
             notes.append(f"Necrotic lesions detected ({brown_pct}% of area), suggesting tissue death or blight progression.")
+        if len(detected_lesions) > 0:
+            notes.append(f"Localized {len(detected_lesions)} active infection foci/lesion zones with visible target-board degradation.")
         if green_pct > 40.0:
             notes.append(f"Substantial viable green canopy retained ({green_pct}% of area).")
 
@@ -154,6 +241,8 @@ class ImageProcessor:
             laplacian_blur_score=round(laplacian_var, 2),
             color_metrics=color_metrics,
             diagnostic_notes=notes,
+            detected_lesions=detected_lesions,
+            annotated_preview_base64=annotated_preview_base64,
         )
 
 

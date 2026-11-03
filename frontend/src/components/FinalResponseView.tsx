@@ -141,8 +141,14 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
 
   const shouldShowImageCard = Boolean(uploadedImageFile || (imageEvidence && imageEvidence.metadata?.canopy_coverage_pct !== undefined));
   const imagePreviewUrl =
+    (uploadedImageFile?.processing_summary as any)?.annotated_preview_base64 ||
+    (imageEvidence?.metadata as any)?.annotated_preview_base64 ||
     uploadedImageFile?.processing_summary?.preview_url ||
     (uploadedImageFile?.metadata?.filename ? `/uploads/${uploadedImageFile.metadata.filename}` : '');
+  const detectedLesions: Array<any> =
+    (uploadedImageFile?.processing_summary as any)?.detected_lesions ||
+    (imageEvidence?.metadata as any)?.detected_lesions ||
+    [];
   const greenCanopyPct = uploadedImageFile?.processing_summary?.color_metrics?.green_canopy_pct ?? (imageEvidence?.metadata?.canopy_coverage_pct as number ?? 0);
   const chlorosisPct = uploadedImageFile?.processing_summary?.color_metrics?.yellow_chlorosis_pct ?? (imageEvidence?.metadata?.chlorosis_severity_pct as number ?? 0);
   const blurScore = uploadedImageFile?.processing_summary?.laplacian_blur_score ?? (imageEvidence?.metadata?.laplacian_blur_score as number ?? 0);
@@ -280,10 +286,44 @@ Verified by AgriMind Multi-Agent Autonomous Architecture
                   <span className="font-mono font-bold text-teal-300">{blurScore} (High Sharpness)</span>
                 </div>
                 <div className="p-2 rounded-lg bg-slate-950 border border-slate-800/80 text-[11px]">
-                  <span className="text-slate-500 block">Lesion Pattern:</span>
-                  <span className="font-semibold text-rose-300">Concentric Rings (Blight)</span>
+                  <span className="text-slate-500 block">Lesion Localization:</span>
+                  <span className="font-semibold text-rose-300">
+                    {detectedLesions.length > 0 ? `${detectedLesions.length} Infection Foci Identified` : 'Concentric Rings (Blight)'}
+                  </span>
                 </div>
               </div>
+
+              {/* Exact Lesion & Spoil Localization Breakdown */}
+              {detectedLesions.length > 0 && (
+                <div className="pt-1 space-y-1.5">
+                  <div className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
+                    <span>Localized Disease / Spoil Foci ({detectedLesions.length} Zones):</span>
+                    <span className="text-[10px] text-emerald-400 font-mono">OpenCV Contour Bounding Box</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
+                    {detectedLesions.map((zone: any, zIdx: number) => (
+                      <div
+                        key={zIdx}
+                        className="p-1.5 rounded-md bg-slate-950/80 border border-slate-800 flex items-center justify-between text-[10px]"
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              zone.severity === 'Severe'
+                                ? 'bg-rose-500 animate-pulse'
+                                : 'bg-amber-400'
+                            }`}
+                          />
+                          <span className="text-slate-200 font-medium truncate">{zone.lesion_type}</span>
+                        </div>
+                        <span className="font-mono text-slate-400 shrink-0 ml-1">
+                          {zone.area_pct}% area
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <p className="text-[11px] text-slate-300 italic bg-slate-950/60 p-2 rounded-lg border border-slate-800/60">
                 Visual Finding: {imageFindingsText || 'Foliar image processed by Computer Vision.'}
